@@ -1,238 +1,482 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Theo Dõi KPI Khu Vực (KPI-SC) - T11/2026</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BÁO CÁO KẾT QUẢ SALE & KPI - OPPO Experience & Service Store Tiền Giang</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-emerald-700 to-teal-700 rounded-2xl p-6 text-white shadow-lg mb-6">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+  <!-- Header -->
+  <header class="bg-[#046A38] text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-white/15 p-2.5 rounded-lg">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
         <div>
-          <span class="inline-block bg-white/20 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">OPPO SERVICE CENTER • KPI-SC T11/2026</span>
-          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">BÁO CÁO CHỈ SỐ KPI KHU VỰC</h1>
-          <p class="text-emerald-100 text-sm mt-1">Theo dõi Năng suất, Volume, TAT 1H, Khảo sát TAT-KS, Điểm NPS & Tỷ lệ chẩn đoán sau sửa chữa</p>
+          <h1 class="text-lg font-bold tracking-wide">BÁO CÁO KẾT QUẢ SALE & KPI</h1>
+          <p class="text-xs text-emerald-100">OPPO Experience & Service Store Tiền Giang</p>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <a href="./data/kpi_sc_t11.json" download class="bg-white/15 hover:bg-white/25 text-white text-xs font-medium px-3 py-2 rounded-lg transition">Tải JSON</a>
-          <a href="./data/kpi_sc_t11.csv" download class="bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-semibold px-3 py-2 rounded-lg shadow transition">Tải CSV</a>
-        </div>
+      </div>
+
+      <!-- Nút Upload Excel trực tiếp & Xuất Excel -->
+      <div class="flex items-center gap-3">
+        <label class="cursor-pointer bg-white text-[#046A38] hover:bg-emerald-50 font-semibold text-sm px-4 py-2 rounded-lg shadow flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          <span>Tải lên file Excel</span>
+          <input type="file" id="excelUpload" accept=".xlsx,.xls" class="hidden" />
+        </label>
+
+        <button onclick="exportReport()" class="bg-[#0B874B] hover:bg-[#09733F] text-white font-semibold text-sm px-4 py-2 rounded-lg border border-white/20 flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <span>Xuất Excel</span>
+        </button>
       </div>
     </div>
 
-    <!-- Summary Cards (National / Active Data) -->
-    <div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6"></div>
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 flex gap-6 text-sm font-medium border-t border-white/10">
+      <button onclick="switchTab('overview')" id="tab-overview" class="py-3 border-b-2 border-white text-white">Tổng hợp KPI</button>
+      <button onclick="switchTab('center')" id="tab-center" class="py-3 border-b-2 border-transparent text-emerald-100 hover:text-white">Center SO (<span id="count-center">0</span>)</button>
+      <button onclick="switchTab('gcsm')" id="tab-gcsm" class="py-3 border-b-2 border-transparent text-emerald-100 hover:text-white">GCSM SO (<span id="count-gcsm">0</span>)</button>
+      <button onclick="switchTab('rule')" id="tab-rule" class="py-3 border-b-2 border-transparent text-emerald-100 hover:text-white">Cấu hình Target & Rule</button>
+    </div>
+  </header>
 
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-sm font-bold text-slate-700 uppercase mb-3">Top 15 Trạm Có Ticket NPS Cao Nhất & Điểm NPS</h2>
-        <div class="h-64">
-          <canvas id="npsChart"></canvas>
-        </div>
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Banner trạng thái dữ liệu -->
+    <div id="statusBanner" class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-xl flex items-center justify-between text-sm">
+      <div>
+        <span class="font-semibold" id="statusTitle">Đang tải dữ liệu...</span>
+        <p class="text-xs text-emerald-700 mt-0.5" id="statusDesc">Bạn có thể bấm "Tải lên file Excel" bất cứ lúc nào để cập nhật số liệu mới từ file Tổng Hợp Sale V1.4.</p>
       </div>
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-sm font-bold text-slate-700 uppercase mb-3">Các Trạm Cần Lưu Ý Chỉ Số Squid Game Final TAT (&lt; 100%)</h2>
-        <div class="h-64">
-          <canvas id="tatChart"></canvas>
-        </div>
-      </div>
+      <button onclick="resetToDefault()" class="text-xs underline text-emerald-800 hover:text-emerald-950 font-medium">Khôi phục mặc định</button>
     </div>
 
-    <!-- Filter & Search Controls -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
-      <div class="flex flex-col sm:flex-row gap-3 flex-1">
-        <input id="searchInput" type="text" placeholder="Tìm theo mã SC (VD: VN001034) hoặc tên khu vực (Tiền Giang, Cần Thơ...)" 
-               class="border border-slate-300 rounded-lg px-3.5 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        <select id="typeFilter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <option value="ALL">Tất cả đơn vị (46 trạm)</option>
-          <option value="SC">Trạm bảo hành SC (43 trạm)</option>
-          <option value="SRC">Trung tâm sửa chữa SRC (3 trạm)</option>
-        </select>
-        <select id="statusFilter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <option value="ALL">Tất cả trạng thái TAT</option>
-          <option value="PASS">Final TAT = 100%</option>
-          <option value="WARN">Final TAT &lt; 100% (Cần chú ý)</option>
-        </select>
-      </div>
-      <div class="text-xs text-slate-500 text-right">
-        Hiển thị <span id="rowCount" class="font-bold text-slate-800">0</span> đơn vị
-      </div>
-    </div>
+    <!-- TAB 1: TỔNG HỢP KPI -->
+    <section id="view-overview" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Card Tổng điểm -->
+        <div class="lg:col-span-2 bg-[#046A38] text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-emerald-200 font-semibold">TỔNG ĐIỂM HOÀN THÀNH KPI</p>
+              <div class="mt-2 flex items-baseline gap-2">
+                <span id="totalScore" class="text-5xl font-extrabold">0</span>
+                <span class="text-lg text-emerald-200">/ <span id="totalTarget">176</span> điểm</span>
+              </div>
+            </div>
+            <div class="bg-white/15 px-4 py-2 rounded-xl text-right">
+              <p class="text-[11px] text-emerald-100">Tỷ lệ đạt</p>
+              <p id="totalPercent" class="text-2xl font-bold">0.0%</p>
+            </div>
+          </div>
 
-    <!-- Main KPI Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left border-collapse whitespace-nowrap">
-          <thead class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+          <div class="mt-6">
+            <div class="w-full bg-black/25 h-2.5 rounded-full overflow-hidden">
+              <div id="totalProgress" class="bg-emerald-300 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="mt-2 flex justify-between text-xs text-emerald-100">
+              <span id="remainingText">Còn thiếu: 176 điểm</span>
+              <span id="a7ProText">A7 Pro bán ra: 0 máy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Trạng thái -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#046A38]"></span> Trạng thái các nhóm KPI
+            </h2>
+            <div class="mt-4 space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Nhóm đạt ≥ 100% chỉ tiêu</span>
+                <span id="achievedGroups" class="font-bold text-[#046A38]">0 / 8 nhóm</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Đơn Center SO hợp lệ</span>
+                <span id="validCenterRows" class="font-bold text-slate-800">0 dòng</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Đơn GCSM SO tính điểm</span>
+                <span id="validGcsmRows" class="font-bold text-slate-800">0 dòng</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="switchTab('rule')" class="mt-5 w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+            ⚙ Chỉnh sửa Target / Bảng điểm Rule
+          </button>
+        </div>
+      </div>
+
+      <!-- 8 Nhóm KPI -->
+      <div id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <!-- Biểu đồ so sánh -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h3 class="text-sm font-bold text-slate-800 mb-4">Biểu đồ so sánh Điểm Đạt Được và Chỉ Tiêu theo nhóm</h3>
+        <div class="h-72">
+          <canvas id="kpiChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CENTER SO -->
+    <section id="view-center" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+        <h2 class="font-bold text-sm">Danh sách đơn Center SO</h2>
+        <input type="text" id="searchCenter" onkeyup="renderTables()" placeholder="Tìm theo tên SP, khách hàng, người lên đơn..." class="text-xs border border-slate-300 rounded-lg px-3 py-1.5 w-64" />
+      </div>
+      <div class="overflow-x-auto max-h-[600px]">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-600 sticky top-0">
             <tr>
-              <th class="py-3.5 px-3">Mã SC</th>
-              <th class="py-3.5 px-3">Khu Vực / Trạm</th>
-              <th class="py-3.5 px-3 text-center">HR (SC/KT)</th>
-              <th class="py-3.5 px-3 text-right">Năng Suất Mới</th>
-              <th class="py-3.5 px-3 text-right">Volume Tổng</th>
-              <th class="py-3.5 px-3 text-right">Khách Lẻ (%)</th>
-              <th class="py-3.5 px-3 text-right">KPI TAT 1H</th>
-              <th class="py-3.5 px-3 text-right">TAT-KS Tổng</th>
-              <th class="py-3.5 px-3 text-right">Final TAT</th>
-              <th class="py-3.5 px-3 text-right">Điểm NPS (Tickets)</th>
-              <th class="py-3.5 px-3 text-right">TLCĐ Sau SC</th>
+              <th class="p-3">Ngày xuất</th>
+              <th class="p-3">Loại xuất</th>
+              <th class="p-3">Tên sản phẩm</th>
+              <th class="p-3">Người lên đơn</th>
+              <th class="p-3">Khách hàng</th>
+              <th class="p-3">Phân loại</th>
+              <th class="p-3 text-right">Điểm</th>
             </tr>
           </thead>
-          <tbody id="kpiTableBody" class="divide-y divide-slate-200"></tbody>
+          <tbody id="tbody-center" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <!-- TAB 3: GCSM SO -->
+    <section id="view-gcsm" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+        <h2 class="font-bold text-sm">Danh sách đơn GCSM SO</h2>
+        <input type="text" id="searchGcsm" onkeyup="renderTables()" placeholder="Tìm theo mã SO, tên SP, KTV..." class="text-xs border border-slate-300 rounded-lg px-3 py-1.5 w-64" />
+      </div>
+      <div class="overflow-x-auto max-h-[600px]">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-600 sticky top-0">
+            <tr>
+              <th class="p-3">Sales Order No.</th>
+              <th class="p-3">Thời gian</th>
+              <th class="p-3">KTV tạo đơn</th>
+              <th class="p-3">Tên sản phẩm</th>
+              <th class="p-3">Model máy</th>
+              <th class="p-3">Type</th>
+              <th class="p-3 text-right">Điểm</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-gcsm" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: RULE -->
+    <section id="view-rule" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-4 border-b border-slate-200">
+        <h2 class="font-bold text-sm">Bảng quy đổi điểm theo Model (Sheet Rule)</h2>
+      </div>
+      <div class="overflow-x-auto max-h-[600px]">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-600 sticky top-0">
+            <tr>
+              <th class="p-3">#</th>
+              <th class="p-3">Model</th>
+              <th class="p-3">Nhóm KPI (Type)</th>
+              <th class="p-3 text-right">Điểm quy đổi</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-rule" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
   <script>
-    let allCenters = [];
+    const DEFAULT_TARGETS = {
+      'PHONE': 68, 'TAI NGHE': 6, 'PAD': 4, 'ỐP LƯNG': 9,
+      'OPPO CARE': 20, 'MDCL': 64, 'SẠC DỰ PHÒNG': 6, 'WATCH': 0
+    };
 
-    function fmtPct(val) {
-      if (val === null || val === undefined || val === '-') return '-';
-      return (Number(val) * 100).toFixed(2) + '%';
+    const LABELS = {
+      'PHONE': 'PHONE', 'TAI NGHE': 'TAI NGHE', 'PAD': 'PAD', 'ỐP LƯNG': 'ỐP LƯNG',
+      'OPPO CARE': 'OPPO CARE', 'MDCL': 'MDCL (DÁN CÓ PHÍ)', 'SẠC DỰ PHÒNG': 'SẠC DỰ PHÒNG', 'WATCH': 'WATCH'
+    };
+
+    let appState = {
+      targets: { ...DEFAULT_TARGETS },
+      centerRows: [],
+      gcsmRows: [],
+      rules: [],
+      sourceName: 'Dữ liệu mặc định (T11/2026)'
+    };
+
+    let chartInstance = null;
+
+    function normalizeType(raw) {
+      if (!raw) return '';
+      const s = String(raw).trim().toUpperCase();
+      if (s.includes('MIẾNG DÁN') || s === 'MDCL') return 'MDCL';
+      if (s.includes('CARE')) return 'OPPO CARE';
+      if (s.includes('SẠC')) return 'SẠC DỰ PHÒNG';
+      if (s.includes('ỐP')) return 'ỐP LƯNG';
+      if (s.includes('TAI NGHE')) return 'TAI NGHE';
+      if (s.includes('PAD')) return 'PAD';
+      if (s.includes('WATCH')) return 'WATCH';
+      if (s.includes('PHONE')) return 'PHONE';
+      return s;
     }
 
-    function fmtNum(val) {
-      if (val === null || val === undefined) return '-';
-      return Number(val).toLocaleString('vi-VN');
-    }
+    document.getElementById('excelUpload').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    function renderSummary(nat) {
-      const cards = [
-        { label: 'Tổng Volume (VN)', value: fmtNum(nat.volume.total), sub: `Không MD: ${fmtNum(nat.volume.no_film)}`, color: 'text-emerald-700' },
-        { label: 'Năng Suất Mới', value: fmtNum(nat.productivity.new_sc), sub: `Năng suất/Tech: ${nat.productivity.per_tech}`, color: 'text-blue-700' },
-        { label: 'Tỷ Lệ Khách Lẻ', value: fmtPct(nat.customer_segment.retail_rate), sub: `${nat.customer_segment.retail_count} KL / ${nat.customer_segment.dealer_ka_count} ĐL`, color: 'text-indigo-700' },
-        { label: 'KPI TAT 1H GCSM', value: fmtPct(nat.tat_gcsm.kpi_tat_1h_total), sub: `Tổng KL tính KPI: ${nat.tat_gcsm.total_kl_kpi}`, color: 'text-teal-700' },
-        { label: 'Final TAT Toàn Quốc', value: fmtPct(nat.kpi_evaluation.squid_game_final_tat), sub: `TAT-KS: ${fmtPct(nat.kpi_evaluation.tat_ks_overall)}`, color: 'text-emerald-700' },
-        { label: 'TLCĐ Sau Sửa Chữa', value: fmtPct(nat.kpi_evaluation.post_diag_rate), sub: `${nat.kpi_evaluation.post_diag_completed}/${nat.kpi_evaluation.post_diag_required} phiếu`, color: 'text-amber-700' }
-      ];
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
 
-      document.getElementById('summaryCards').innerHTML = cards.map(c => `
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-          <div class="text-xs font-medium text-slate-500">${c.label}</div>
-          <div class="text-xl font-bold ${c.color} mt-1">${c.value}</div>
-          <div class="text-xs text-slate-400 mt-1">${c.sub}</div>
-        </div>
-      `).join('');
-    }
+        if (workbook.Sheets['Tổng hợp']) {
+          const th = XLSX.utils.sheet_to_json(workbook.Sheets['Tổng hợp'], { header: 1 });
+          if (th[2]) {
+            appState.targets = {
+              'PHONE': Number(th[2][4]) || 68,
+              'TAI NGHE': Number(th[2][7]) || 6,
+              'PAD': Number(th[2][10]) || 4,
+              'ỐP LƯNG': Number(th[2][13]) || 9,
+              'OPPO CARE': Number(th[2][16]) || 20,
+              'MDCL': Number(th[2][19]) || 64,
+              'SẠC DỰ PHÒNG': Number(th[2][22]) || 6,
+              'WATCH': Number(th[2][26]) || 0
+            };
+          }
+        }
 
-    function renderTable(data) {
-      document.getElementById('rowCount').textContent = data.length;
-      const tbody = document.getElementById('kpiTableBody');
-      tbody.innerHTML = data.map(row => {
-        const finalTat = row.kpi_evaluation.squid_game_final_tat;
-        const isWarn = finalTat !== null && finalTat < 1;
-        const isTienGiang = row.sc_code === 'VN001034';
-        const rowBg = isTienGiang ? 'bg-emerald-50/70 font-medium' : (isWarn ? 'bg-rose-50/40' : 'hover:bg-slate-50');
-        
-        return `
-          <tr class="${rowBg} transition">
-            <td class="py-3 px-3 font-mono text-xs text-slate-600">${row.sc_code}</td>
-            <td class="py-3 px-3 font-semibold text-slate-800">
-              ${row.sc_name}
-              ${row.type === 'SRC' ? '<span class="ml-1.5 text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">SRC</span>' : ''}
-            </td>
-            <td class="py-3 px-3 text-center text-slate-600">${row.hr.hr_sc ?? '-'} / ${row.hr.hr_tech ?? '-'}</td>
-            <td class="py-3 px-3 text-right">${fmtNum(row.productivity.new_sc)}</td>
-            <td class="py-3 px-3 text-right">${fmtNum(row.volume.total)}</td>
-            <td class="py-3 px-3 text-right">${row.customer_segment.retail_rate ? fmtPct(row.customer_segment.retail_rate) : '-'}</td>
-            <td class="py-3 px-3 text-right text-teal-700 font-medium">${fmtPct(row.tat_gcsm.kpi_tat_1h_total)}</td>
-            <td class="py-3 px-3 text-right">${fmtPct(row.kpi_evaluation.tat_ks_overall)}</td>
-            <td class="py-3 px-3 text-right font-bold ${isWarn ? 'text-rose-600' : 'text-emerald-700'}">${fmtPct(finalTat)}</td>
-            <td class="py-3 px-3 text-right">
-              <span class="font-medium">${fmtPct(row.nps.point)}</span>
-              <span class="text-xs text-slate-400">(${row.nps.tickets ?? 0})</span>
-            </td>
-            <td class="py-3 px-3 text-right">${fmtPct(row.kpi_evaluation.post_diag_rate)}</td>
-          </tr>
+        if (workbook.Sheets['Center SO']) {
+          const rawCenter = XLSX.utils.sheet_to_json(workbook.Sheets['Center SO'], { range: 2 });
+          appState.centerRows = rawCenter
+            .filter(r => r['Loại xuất'] === 'Xuất bán' && r['Trạng thái'] === 'Hiệu lực')
+            .map(r => ({
+              date: r['Ngày xuất bán'] || '',
+              exportType: r['Loại xuất'] || '',
+              product: r['Tên sản phẩm'] || r['Model'] || '',
+              staff: r['Người lên đơn'] || '',
+              customer: r['Tên khách hàng'] || '',
+              type: normalizeType(r['Type']),
+              score: Number(r['Điểm']) || 0
+            }));
+        }
+
+        if (workbook.Sheets['GCSM SO']) {
+          const rawGcsm = XLSX.utils.sheet_to_json(workbook.Sheets['GCSM SO']);
+          appState.gcsmRows = rawGcsm
+            .filter(r => (Number(r['Điểm']) || 0) > 0 || r['Type'])
+            .map(r => ({
+              so: r['Sales order No.'] || '',
+              time: r['Sales time'] || r['Created on'] || '',
+              staff: r['Created by'] || '',
+              product: r['Sales Product Name'] || '',
+              model: r['Marketing model'] || '',
+              type: normalizeType(r['Type']),
+              score: Number(r['Điểm']) || 0
+            }));
+        }
+
+        if (workbook.Sheets['Rule']) {
+          const rawRule = XLSX.utils.sheet_to_json(workbook.Sheets['Rule']);
+          appState.rules = rawRule.map(r => ({
+            model: r['Model'] || '',
+            score: Number(r['Điểm tổng kết']) || 0,
+            type: normalizeType(r['Type'])
+          }));
+        }
+
+        appState.sourceName = `File tải lên: ${file.name} (${new Date().toLocaleTimeString('vi-VN')})`;
+        localStorage.setItem('oppo_tg_kpi_data', JSON.stringify(appState));
+        renderDashboard();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function renderDashboard() {
+      const scores = {
+        'PHONE': 0, 'TAI NGHE': 0, 'PAD': 0, 'ỐP LƯNG': 0,
+        'OPPO CARE': 0, 'MDCL': 0, 'SẠC DỰ PHÒNG': 0, 'WATCH': 0
+      };
+      let a7ProCount = 0;
+
+      appState.centerRows.forEach(r => {
+        if (scores.hasOwnProperty(r.type)) scores[r.type] += r.score;
+        if (String(r.product).toUpperCase().includes('A7 PRO')) a7ProCount += 1;
+      });
+
+      appState.gcsmRows.forEach(r => {
+        if (scores.hasOwnProperty(r.type)) scores[r.type] += r.score;
+      });
+
+      const totalTarget = Object.values(appState.targets).reduce((a, b) => a + b, 0) - (appState.targets['WATCH'] || 0);
+      const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+      const pct = totalTarget > 0 ? ((totalScore / totalTarget) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('statusTitle').textContent = appState.sourceName;
+      document.getElementById('totalScore').textContent = totalScore;
+      document.getElementById('totalTarget').textContent = totalTarget || 176;
+      document.getElementById('totalPercent').textContent = `${pct}%`;
+      document.getElementById('totalProgress').style.width = `${Math.min(100, Number(pct))}%`;
+      document.getElementById('remainingText').textContent = totalScore >= totalTarget
+        ? `Vượt chỉ tiêu: +${totalScore - totalTarget} điểm`
+        : `Còn thiếu: ${totalTarget - totalScore} điểm`;
+      document.getElementById('a7ProText').textContent = `A7 Pro bán ra: ${a7ProCount} máy`;
+
+      document.getElementById('count-center').textContent = appState.centerRows.length;
+      document.getElementById('count-gcsm').textContent = appState.gcsmRows.length;
+      document.getElementById('validCenterRows').textContent = `${appState.centerRows.length} dòng`;
+      document.getElementById('validGcsmRows').textContent = `${appState.gcsmRows.filter(x => x.score > 0).length} dòng`;
+
+      const grid = document.getElementById('kpiGrid');
+      grid.innerHTML = '';
+      let achieved = 0;
+
+      Object.keys(LABELS).forEach(key => {
+        const sc = scores[key] || 0;
+        const tg = appState.targets[key] || 0;
+        const itemPct = tg > 0 ? ((sc / tg) * 100).toFixed(1) : (sc > 0 ? '100.0' : '0.0');
+        if (tg > 0 && sc >= tg) achieved++;
+
+        grid.innerHTML += `
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-xs font-bold text-slate-500">${LABELS[key]}</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${Number(itemPct) >= 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${itemPct}%</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-extrabold text-slate-800">${sc}</span>
+              <span class="text-xs text-slate-400">/ ${tg} điểm</span>
+            </div>
+            <div class="mt-3 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-[#046A38] h-full rounded-full" style="width: ${Math.min(100, Number(itemPct))}%"></div>
+            </div>
+          </div>
         `;
-      }).join('');
+      });
+
+      document.getElementById('achievedGroups').textContent = `${achieved} / 8 nhóm`;
+      renderChart(scores);
+      renderTables();
     }
 
-    function renderCharts(centers) {
-      // Top 15 NPS by ticket volume
-      const topNps = [...centers]
-        .filter(c => (c.nps.tickets || 0) > 0)
-        .sort((a, b) => b.nps.tickets - a.nps.tickets)
-        .slice(0, 15);
+    function renderChart(scores) {
+      const ctx = document.getElementById('kpiChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
 
-      new Chart(document.getElementById('npsChart'), {
+      const keys = Object.keys(LABELS);
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: topNps.map(c => c.sc_name.replace(' OPPO SC', '')),
-          datasets: [{
-            label: 'Điểm NPS (%)',
-            data: topNps.map(c => (c.nps.point * 100).toFixed(1)),
-            backgroundColor: '#059669',
-            borderRadius: 4
-          }]
+          labels: keys.map(k => LABELS[k]),
+          datasets: [
+            { label: 'Điểm đạt được', data: keys.map(k => scores[k] || 0), backgroundColor: '#046A38', borderRadius: 6 },
+            { label: 'Chỉ tiêu (Target)', data: keys.map(k => appState.targets[k] || 0), backgroundColor: '#CBD5E1', borderRadius: 6 }
+          ]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { callback: v => v + '%' } } }
-        }
-      });
-
-      // Centers with Final TAT < 100%
-      const warnTat = [...centers]
-        .filter(c => c.kpi_evaluation.squid_game_final_tat !== null && c.kpi_evaluation.squid_game_final_tat < 1)
-        .sort((a, b) => a.kpi_evaluation.squid_game_final_tat - b.kpi_evaluation.squid_game_final_tat);
-
-      new Chart(document.getElementById('tatChart'), {
-        type: 'bar',
-        data: {
-          labels: warnTat.map(c => c.sc_name.replace(' OPPO SC', '')),
-          datasets: [{
-            label: 'Final TAT (%)',
-            data: warnTat.map(c => (c.kpi_evaluation.squid_game_final_tat * 100).toFixed(2)),
-            backgroundColor: '#e11d48',
-            borderRadius: 4
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { x: { min: 80, max: 100, ticks: { callback: v => v + '%' } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
       });
     }
 
-    function applyFilters() {
-      const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      const type = document.getElementById('typeFilter').value;
-      const status = document.getElementById('statusFilter').value;
+    function renderTables() {
+      const qCenter = (document.getElementById('searchCenter')?.value || '').toLowerCase();
+      document.getElementById('tbody-center').innerHTML = appState.centerRows
+        .filter(r => `${r.product} ${r.customer} ${r.staff}`.toLowerCase().includes(qCenter))
+        .map(r => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 whitespace-nowrap">${r.date}</td>
+            <td class="p-3">${r.exportType}</td>
+            <td class="p-3 font-medium">${r.product}</td>
+            <td class="p-3">${r.staff}</td>
+            <td class="p-3">${r.customer}</td>
+            <td class="p-3"><span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded">${r.type}</span></td>
+            <td class="p-3 text-right font-bold">${r.score}</td>
+          </tr>
+        `).join('');
 
-      const filtered = allCenters.filter(c => {
-        const matchQuery = c.sc_name.toLowerCase().includes(q) || c.sc_code.toLowerCase().includes(q);
-        const matchType = type === 'ALL' || c.type === type;
-        const ft = c.kpi_evaluation.squid_game_final_tat;
-        const matchStatus = status === 'ALL' || (status === 'PASS' && ft >= 1) || (status === 'WARN' && ft < 1);
-        return matchQuery && matchType && matchStatus;
-      });
-      renderTable(filtered);
+      const qGcsm = (document.getElementById('searchGcsm')?.value || '').toLowerCase();
+      document.getElementById('tbody-gcsm').innerHTML = appState.gcsmRows
+        .filter(r => `${r.so} ${r.product} ${r.staff} ${r.model}`.toLowerCase().includes(qGcsm))
+        .map(r => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono">${r.so}</td>
+            <td class="p-3 whitespace-nowrap">${r.time}</td>
+            <td class="p-3">${r.staff}</td>
+            <td class="p-3 font-medium">${r.product}</td>
+            <td class="p-3">${r.model}</td>
+            <td class="p-3"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded">${r.type}</span></td>
+            <td class="p-3 text-right font-bold">${r.score}</td>
+          </tr>
+        `).join('');
+
+      document.getElementById('tbody-rule').innerHTML = appState.rules
+        .map((r, i) => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 text-slate-400">${i + 1}</td>
+            <td class="p-3 font-medium">${r.model}</td>
+            <td class="p-3">${r.type}</td>
+            <td class="p-3 text-right font-bold">${r.score}</td>
+          </tr>
+        `).join('');
     }
 
-    fetch('./data/kpi_sc_t11.json')
-      .then(r => r.json())
-      .then(data => {
-        allCenters = data.service_centers;
-        renderSummary(data.national_summary);
-        renderTable(allCenters);
-        renderCharts(allCenters);
+    function switchTab(tab) {
+      ['overview', 'center', 'gcsm', 'rule'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-${t}`);
+        btn.classList.toggle('border-white', t === tab);
+        btn.classList.toggle('text-white', t === tab);
+        btn.classList.toggle('border-transparent', t !== tab);
+        btn.classList.toggle('text-emerald-100', t !== tab);
       });
+    }
 
-    document.getElementById('searchInput').addEventListener('input', applyFilters);
-    document.getElementById('typeFilter').addEventListener('change', applyFilters);
-    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    function exportReport() {
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(appState.centerRows), 'Center_SO_Filtered');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(appState.gcsmRows), 'GCSM_SO_Filtered');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(appState.rules), 'Rule');
+      XLSX.writeFile(wb, 'Bao_Cao_KPI_Tien_Giang.xlsx');
+    }
+
+    async function loadInitialData() {
+      const cached = localStorage.getItem('oppo_tg_kpi_data');
+      if (cached) {
+        appState = JSON.parse(cached);
+        renderDashboard();
+        return;
+      }
+      await resetToDefault();
+    }
+
+    async function resetToDefault() {
+      localStorage.removeItem('oppo_tg_kpi_data');
+      try {
+        const res = await fetch('./data.json');
+        if (res.ok) {
+          appState = await res.json();
+        }
+      } catch (err) {
+        console.log('Chưa có data.json mặc định.');
+      }
+      renderDashboard();
+    }
+
+    loadInitialData();
   </script>
 </body>
 </html>
