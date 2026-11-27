@@ -1,12 +1,238 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sales Overview - OPPO Experience & Service Store</title>
-  </head>
-  <body class="bg-[#F6F9F8] text-slate-900 antialiased">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Theo Dõi KPI Khu Vực (KPI-SC) - T11/2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-emerald-700 to-teal-700 rounded-2xl p-6 text-white shadow-lg mb-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <span class="inline-block bg-white/20 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">OPPO SERVICE CENTER • KPI-SC T11/2026</span>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">BÁO CÁO CHỈ SỐ KPI KHU VỰC</h1>
+          <p class="text-emerald-100 text-sm mt-1">Theo dõi Năng suất, Volume, TAT 1H, Khảo sát TAT-KS, Điểm NPS & Tỷ lệ chẩn đoán sau sửa chữa</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="./data/kpi_sc_t11.json" download class="bg-white/15 hover:bg-white/25 text-white text-xs font-medium px-3 py-2 rounded-lg transition">Tải JSON</a>
+          <a href="./data/kpi_sc_t11.csv" download class="bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-semibold px-3 py-2 rounded-lg shadow transition">Tải CSV</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Cards (National / Active Data) -->
+    <div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6"></div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-sm font-bold text-slate-700 uppercase mb-3">Top 15 Trạm Có Ticket NPS Cao Nhất & Điểm NPS</h2>
+        <div class="h-64">
+          <canvas id="npsChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-sm font-bold text-slate-700 uppercase mb-3">Các Trạm Cần Lưu Ý Chỉ Số Squid Game Final TAT (&lt; 100%)</h2>
+        <div class="h-64">
+          <canvas id="tatChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+      <div class="flex flex-col sm:flex-row gap-3 flex-1">
+        <input id="searchInput" type="text" placeholder="Tìm theo mã SC (VD: VN001034) hoặc tên khu vực (Tiền Giang, Cần Thơ...)" 
+               class="border border-slate-300 rounded-lg px-3.5 py-2 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <select id="typeFilter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="ALL">Tất cả đơn vị (46 trạm)</option>
+          <option value="SC">Trạm bảo hành SC (43 trạm)</option>
+          <option value="SRC">Trung tâm sửa chữa SRC (3 trạm)</option>
+        </select>
+        <select id="statusFilter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="ALL">Tất cả trạng thái TAT</option>
+          <option value="PASS">Final TAT = 100%</option>
+          <option value="WARN">Final TAT &lt; 100% (Cần chú ý)</option>
+        </select>
+      </div>
+      <div class="text-xs text-slate-500 text-right">
+        Hiển thị <span id="rowCount" class="font-bold text-slate-800">0</span> đơn vị
+      </div>
+    </div>
+
+    <!-- Main KPI Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left border-collapse whitespace-nowrap">
+          <thead class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+            <tr>
+              <th class="py-3.5 px-3">Mã SC</th>
+              <th class="py-3.5 px-3">Khu Vực / Trạm</th>
+              <th class="py-3.5 px-3 text-center">HR (SC/KT)</th>
+              <th class="py-3.5 px-3 text-right">Năng Suất Mới</th>
+              <th class="py-3.5 px-3 text-right">Volume Tổng</th>
+              <th class="py-3.5 px-3 text-right">Khách Lẻ (%)</th>
+              <th class="py-3.5 px-3 text-right">KPI TAT 1H</th>
+              <th class="py-3.5 px-3 text-right">TAT-KS Tổng</th>
+              <th class="py-3.5 px-3 text-right">Final TAT</th>
+              <th class="py-3.5 px-3 text-right">Điểm NPS (Tickets)</th>
+              <th class="py-3.5 px-3 text-right">TLCĐ Sau SC</th>
+            </tr>
+          </thead>
+          <tbody id="kpiTableBody" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allCenters = [];
+
+    function fmtPct(val) {
+      if (val === null || val === undefined || val === '-') return '-';
+      return (Number(val) * 100).toFixed(2) + '%';
+    }
+
+    function fmtNum(val) {
+      if (val === null || val === undefined) return '-';
+      return Number(val).toLocaleString('vi-VN');
+    }
+
+    function renderSummary(nat) {
+      const cards = [
+        { label: 'Tổng Volume (VN)', value: fmtNum(nat.volume.total), sub: `Không MD: ${fmtNum(nat.volume.no_film)}`, color: 'text-emerald-700' },
+        { label: 'Năng Suất Mới', value: fmtNum(nat.productivity.new_sc), sub: `Năng suất/Tech: ${nat.productivity.per_tech}`, color: 'text-blue-700' },
+        { label: 'Tỷ Lệ Khách Lẻ', value: fmtPct(nat.customer_segment.retail_rate), sub: `${nat.customer_segment.retail_count} KL / ${nat.customer_segment.dealer_ka_count} ĐL`, color: 'text-indigo-700' },
+        { label: 'KPI TAT 1H GCSM', value: fmtPct(nat.tat_gcsm.kpi_tat_1h_total), sub: `Tổng KL tính KPI: ${nat.tat_gcsm.total_kl_kpi}`, color: 'text-teal-700' },
+        { label: 'Final TAT Toàn Quốc', value: fmtPct(nat.kpi_evaluation.squid_game_final_tat), sub: `TAT-KS: ${fmtPct(nat.kpi_evaluation.tat_ks_overall)}`, color: 'text-emerald-700' },
+        { label: 'TLCĐ Sau Sửa Chữa', value: fmtPct(nat.kpi_evaluation.post_diag_rate), sub: `${nat.kpi_evaluation.post_diag_completed}/${nat.kpi_evaluation.post_diag_required} phiếu`, color: 'text-amber-700' }
+      ];
+
+      document.getElementById('summaryCards').innerHTML = cards.map(c => `
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <div class="text-xs font-medium text-slate-500">${c.label}</div>
+          <div class="text-xl font-bold ${c.color} mt-1">${c.value}</div>
+          <div class="text-xs text-slate-400 mt-1">${c.sub}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTable(data) {
+      document.getElementById('rowCount').textContent = data.length;
+      const tbody = document.getElementById('kpiTableBody');
+      tbody.innerHTML = data.map(row => {
+        const finalTat = row.kpi_evaluation.squid_game_final_tat;
+        const isWarn = finalTat !== null && finalTat < 1;
+        const isTienGiang = row.sc_code === 'VN001034';
+        const rowBg = isTienGiang ? 'bg-emerald-50/70 font-medium' : (isWarn ? 'bg-rose-50/40' : 'hover:bg-slate-50');
+        
+        return `
+          <tr class="${rowBg} transition">
+            <td class="py-3 px-3 font-mono text-xs text-slate-600">${row.sc_code}</td>
+            <td class="py-3 px-3 font-semibold text-slate-800">
+              ${row.sc_name}
+              ${row.type === 'SRC' ? '<span class="ml-1.5 text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">SRC</span>' : ''}
+            </td>
+            <td class="py-3 px-3 text-center text-slate-600">${row.hr.hr_sc ?? '-'} / ${row.hr.hr_tech ?? '-'}</td>
+            <td class="py-3 px-3 text-right">${fmtNum(row.productivity.new_sc)}</td>
+            <td class="py-3 px-3 text-right">${fmtNum(row.volume.total)}</td>
+            <td class="py-3 px-3 text-right">${row.customer_segment.retail_rate ? fmtPct(row.customer_segment.retail_rate) : '-'}</td>
+            <td class="py-3 px-3 text-right text-teal-700 font-medium">${fmtPct(row.tat_gcsm.kpi_tat_1h_total)}</td>
+            <td class="py-3 px-3 text-right">${fmtPct(row.kpi_evaluation.tat_ks_overall)}</td>
+            <td class="py-3 px-3 text-right font-bold ${isWarn ? 'text-rose-600' : 'text-emerald-700'}">${fmtPct(finalTat)}</td>
+            <td class="py-3 px-3 text-right">
+              <span class="font-medium">${fmtPct(row.nps.point)}</span>
+              <span class="text-xs text-slate-400">(${row.nps.tickets ?? 0})</span>
+            </td>
+            <td class="py-3 px-3 text-right">${fmtPct(row.kpi_evaluation.post_diag_rate)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCharts(centers) {
+      // Top 15 NPS by ticket volume
+      const topNps = [...centers]
+        .filter(c => (c.nps.tickets || 0) > 0)
+        .sort((a, b) => b.nps.tickets - a.nps.tickets)
+        .slice(0, 15);
+
+      new Chart(document.getElementById('npsChart'), {
+        type: 'bar',
+        data: {
+          labels: topNps.map(c => c.sc_name.replace(' OPPO SC', '')),
+          datasets: [{
+            label: 'Điểm NPS (%)',
+            data: topNps.map(c => (c.nps.point * 100).toFixed(1)),
+            backgroundColor: '#059669',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { callback: v => v + '%' } } }
+        }
+      });
+
+      // Centers with Final TAT < 100%
+      const warnTat = [...centers]
+        .filter(c => c.kpi_evaluation.squid_game_final_tat !== null && c.kpi_evaluation.squid_game_final_tat < 1)
+        .sort((a, b) => a.kpi_evaluation.squid_game_final_tat - b.kpi_evaluation.squid_game_final_tat);
+
+      new Chart(document.getElementById('tatChart'), {
+        type: 'bar',
+        data: {
+          labels: warnTat.map(c => c.sc_name.replace(' OPPO SC', '')),
+          datasets: [{
+            label: 'Final TAT (%)',
+            data: warnTat.map(c => (c.kpi_evaluation.squid_game_final_tat * 100).toFixed(2)),
+            backgroundColor: '#e11d48',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { min: 80, max: 100, ticks: { callback: v => v + '%' } } }
+        }
+      });
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const type = document.getElementById('typeFilter').value;
+      const status = document.getElementById('statusFilter').value;
+
+      const filtered = allCenters.filter(c => {
+        const matchQuery = c.sc_name.toLowerCase().includes(q) || c.sc_code.toLowerCase().includes(q);
+        const matchType = type === 'ALL' || c.type === type;
+        const ft = c.kpi_evaluation.squid_game_final_tat;
+        const matchStatus = status === 'ALL' || (status === 'PASS' && ft >= 1) || (status === 'WARN' && ft < 1);
+        return matchQuery && matchType && matchStatus;
+      });
+      renderTable(filtered);
+    }
+
+    fetch('./data/kpi_sc_t11.json')
+      .then(r => r.json())
+      .then(data => {
+        allCenters = data.service_centers;
+        renderSummary(data.national_summary);
+        renderTable(allCenters);
+        renderCharts(allCenters);
+      });
+
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('typeFilter').addEventListener('change', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+  </script>
+</body>
 </html>
