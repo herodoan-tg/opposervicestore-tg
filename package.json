@@ -1,8 +1,0 @@
-{
-  "name": "oppo-tiengiang-kpi-dashboard",
-  "version": "1.4.0",
-  "private": true,
-  "scripts": {
-    "build": "mkdir -p dist && cp index.html dist/ && cp -r public/* dist/ 2>/dev/null || true"
-  }
-}
