@@ -216,7 +216,15 @@
           <p class="text-sm text-slate-500">Đang phân tích dữ liệu…</p>
         </div>
         <p class="text-[11px] text-slate-400 mt-3">Lưu ý: tiến độ Target lấy từ bảng KPI tổng hợp; đánh giá nhân sự và sản phẩm sử dụng giao dịch Center SO / GCSM SO theo bộ lọc đang chọn.</p>
+      
+      <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mt-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+          <div><h3 class="text-base font-bold text-slate-900">📦 Chiến Lược Bán Hàng & Quản Trị Tồn Kho</h3><p class="text-xs text-slate-500 mt-1">Đối chiếu tồn hiện tại, IMEI trên 60 ngày và giao dịch Center SO.</p></div>
+          <span class="text-xs rounded-full bg-amber-50 text-amber-700 px-3 py-1 font-semibold">Tải trực tiếp từ GitHub</span>
+        </div>
+        <div id="mgInventoryPanel"><div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Đang tải dữ liệu tồn kho…</div></div>
       </section>
+</section>
 
       <!-- Product sales detail follows staff contribution -->
             <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Chi Tiết Doanh Số Theo Sản Phẩm</h3><p class="text-xs text-slate-500 mb-3">Tổng hợp hai nguồn, có lọc ngày và nhân viên</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Sản phẩm / Model</th><th class="p-2">Nhóm</th><th class="p-2 text-right">SL</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Điểm</th></tr></thead><tbody id="mgProductBody" class="text-xs divide-y"></tbody></table></div></div>
@@ -425,6 +433,6 @@
   <!-- Load default data first, then app logic -->
   <script src="data/default-data.js"></script>
   <script src="assets/app.js"></script>
-  <script src="assets/management.js?v=20261128-insights1"></script>
+  <script src="assets/management.js?v=20261128-inventory1"></script>
 </body>
 </html>
