@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPPO Experience & Service Store - Dashboard Vận Hành</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-badge">OPPO</div>
+      <div>
+        <h1 id="shopTitle">OPPO Experience & Service Store Tiền Giang</h1>
+        <p class="subtitle">
+          Mã trạm: <strong id="scCode">VN001034</strong> • Cập nhật lần cuối: <span id="lastUpdated">Dữ liệu mẫu T11/2026</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="actions no-print">
+      <label for="excelUpload" class="btn btn-primary">
+        📤 Upload Excel (.xlsx)
+      </label>
+      <input type="file" id="excelUpload" accept=".xlsx,.xls" hidden />
+
+      <button id="btnEditTarget" class="btn btn-secondary">
+        🎯 Chỉnh sửa Target
+      </button>
+
+      <button id="btnExportReport" class="btn btn-accent">
+        📄 Export Báo Cáo
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-header">
+          <span>TỔNG ĐIỂM DOANH SỐ</span>
+          <span class="badge" id="badgeTotalScore">119.9%</span>
+        </div>
+        <div class="kpi-value"><span id="valTotalScore">211</span> <small>/ <span id="tgtTotalScore">176</span> điểm</small></div>
+        <div class="progress-bar"><div class="progress-fill" id="barTotalScore" style="width: 100%"></div></div>
+        <div class="kpi-foot">Vượt chỉ tiêu <strong id="diffTotalScore">+35</strong> điểm</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span>SERVICE VOLUME (MỚI)</span>
+          <span class="badge badge-info">Hạng #1</span>
+        </div>
+        <div class="kpi-value"><span id="valServiceVol">316.5</span> <small>điểm</small></div>
+        <div class="kpi-foot">Tổng phiếu: <strong id="valTotalTickets">446</strong> • Năng suất/Tech: <strong id="valTechProd">158.25</strong></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span>KPI TAT 1H (SỬA CHỮA NHANH)</span>
+          <span class="badge badge-success" id="badgeTat">ĐẠT</span>
+        </div>
+        <div class="kpi-value" id="valTat1h">99.44%</div>
+        <div class="kpi-foot">177/178 ca đạt • TAT-KS 1H: <strong>100%</strong> • NPS: <strong id="valNps">17.86%</strong></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span>CHẨN ĐOÁN SAU SỬA CHỮA</span>
+          <span class="badge badge-success">99.28%</span>
+        </div>
+        <div class="kpi-value"><span id="valDiagDone">277</span> <small>/ <span id="valDiagReq">279</span> ca</small></div>
+        <div class="kpi-foot">Tỷ lệ hủy phiếu: <strong id="valCancelRate">4.26%</strong> (19/446)</div>
+      </div>
+    </section>
+
+    <section class="charts-row">
+      <div class="card chart-box-lg">
+        <div class="card-header">
+          <h3>📊 Tiến độ hoàn thành điểm số theo Nhóm Sản Phẩm</h3>
+          <span class="hint">So sánh Thực đạt vs Target</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card chart-box-sm">
+        <div class="card-header">
+          <h3>🛠️ Cơ cấu phiếu Dịch Vụ (446 phiếu)</h3>
+          <span class="hint">Phân bổ theo loại nghiệp vụ</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="serviceMixChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="tables-row">
+      <div class="card">
+        <div class="card-header">
+          <h3>🎯 Chi tiết KPI Bán Hàng (Brandshop)</h3>
+          <span class="hint" id="salesSummaryText">7/8 nhóm đạt & vượt Target</span>
+        </div>
+        <div class="table-responsive">
+          <table id="salesTable">
+            <thead>
+              <tr>
+                <th>Nhóm sản phẩm</th>
+                <th class="num">Target</th>
+                <th class="num">Thực đạt</th>
+                <th class="num">Chênh lệch</th>
+                <th class="num">% Hoàn thành</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>👨‍🔧 Năng suất & Chất lượng Kỹ Thuật Viên</h3>
+          <span class="hint">Dữ liệu từ Sheet Tổng hợp & KPI-KT</span>
+        </div>
+        <div class="table-responsive">
+          <table id="techTable">
+            <thead>
+              <tr>
+                <th>Kỹ thuật viên</th>
+                <th>Mã KT</th>
+                <th class="num">Sửa chữa (*1)</th>
+                <th class="num">DV cộng thêm (*0.5)</th>
+                <th class="num">Phiếu SO</th>
+                <th class="num">Năng suất mới</th>
+                <th class="num">TAT 1H</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="mini-stats">
+          <div class="mini-stat-item">
+            <span>Khách lẻ (KL)</span>
+            <strong id="valKL">150 (60%)</strong>
+          </div>
+          <div class="mini-stat-item">
+            <span>Đại lý (DL/KA)</span>
+            <strong id="valDL">100 (40%)</strong>
+          </div>
+          <div class="mini-stat-item">
+            <span>Dán màn hình (CR+SO)</span>
+            <strong id="valFilm">161 phiếu (36.1%)</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="targetModal" class="modal hidden no-print">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🎯 Thiết lập Target Chỉ Số Shop</h3>
+        <button class="close-btn" id="closeTargetModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống sẽ tự động tính lại % hoàn thành và lưu vào trình duyệt.</p>
+        <div id="targetInputsGrid" class="target-grid"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnResetDefault" class="btn btn-ghost">Khôi phục mặc định</button>
+        <button id="btnSaveTarget" class="btn btn-primary">💾 Lưu Target</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reportModal" class="modal hidden">
+    <div class="modal-content report-modal-lg">
+      <div class="modal-header no-print">
+        <h3>📄 Báo Cáo Nhanh Vận Hành Shop</h3>
+        <button class="close-btn" id="closeReportModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="reportTextOutput" rows="16" readonly></textarea>
+      </div>
+      <div class="modal-footer no-print">
+        <button id="btnCopyReport" class="btn btn-secondary">📋 Copy gửi Zalo/Email</button>
+        <button id="btnDownloadTxt" class="btn btn-secondary">⬇️ Tải file .TXT</button>
+        <button id="btnPrintPdf" class="btn btn-primary">🖨️ In / Lưu PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
