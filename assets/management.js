@@ -24,7 +24,7 @@ function mgRefreshFilteredViews(){if(typeof window.renderCharts==='function')win
 function mgDate(v){if(v instanceof Date){const d=new Date(v.getTime()-v.getTimezoneOffset()*60000);return d.toISOString().slice(0,16).replace('T',' ');}return String(v||'').slice(0,19);}
 function mgNum(v){const n=typeof v==='number'?v:parseFloat(String(v??0).replace(/,/g,''));return Number.isFinite(n)?n:0;}
 function mgText(v){return v==null?'':String(v).trim();}
-function mgHeaderKey(v){return String(v??'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/đ/g,'d').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function mgHeaderKey(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
 function mgFindHeader(sheet,src){
   const grid=XLSX.utils.sheet_to_json(sheet,{header:1,defval:null,blankrows:false});
   const sets=src==='CENTER'?[['don hang chi tiet','don hang tong','order details'],['ngay xuat ban','ngay ban','sales date'],['nguoi len don','created by','seller']]:[['sales order no','sales order number','so ban hang'],['created by','nguoi tao','seller'],['sales product name','product name','ten san pham']];
@@ -33,7 +33,7 @@ function mgFindHeader(sheet,src){
   return bestScore>=2?best:null;
 }
 function mgGet(row,headers,aliases){const normalized=headers.map(mgHeaderKey);for(const alias of aliases){const a=mgHeaderKey(alias),i=normalized.findIndex(h=>h===a||h.includes(a));if(i>=0){const key=headers[i];if(row[key]!==undefined&&row[key]!==null&&String(row[key]).trim()!=='')return row[key];}}return null;}
-function mgDateValue(v){if(v instanceof Date)return mgDate(v);if(typeof v==='number'&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);if(d)return String(d.y)+'-'+String(d.m).padStart(2,'0')+'-'+String(d.d).padStart(2,'0')+' '+String(d.H||0).padStart(2,'0')+':'+String(d.M||0).padStart(2,'0');}const s=String(v??'').trim();if(!s)return '';const m=s.match(/^(\\d{1,2})[\\/.-](\\d{1,2})[\\/.-](\\d{4})(.*)$/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')+(m[4]?' '+m[4].trim():'');return s.slice(0,19);}
+function mgDateValue(v){if(v instanceof Date)return mgDate(v);if(typeof v==='number'&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);if(d)return String(d.y)+'-'+String(d.m).padStart(2,'0')+'-'+String(d.d).padStart(2,'0')+' '+String(d.H||0).padStart(2,'0')+':'+String(d.M||0).padStart(2,'0');}const s=String(v??'').trim();if(!s)return '';const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(.*)$/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')+(m[4]?' '+m[4].trim():'');return s.slice(0,19);}
 function mgUpload(file,src){
   if(!file)return;const status=document.getElementById(src==='CENTER'?'mgCenterStatus':'mgGcsmStatus');if(status)status.textContent='Đang đọc file '+file.name+'…';
   const rd=new FileReader();rd.onerror=()=>{const msg='Không đọc được file. Hãy thử lưu lại file dưới dạng .xlsx.';if(status)status.textContent=msg;if(typeof showToast==='function')showToast(msg,'error');};
