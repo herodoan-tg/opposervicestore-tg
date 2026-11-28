@@ -50,6 +50,17 @@ function mgFindHeader(sheet,src){
   for(let i=0;i<Math.min(grid.length,25);i++){const headers=(grid[i]||[]).map(mgHeaderKey);const score=sets.reduce((n,aliases)=>n+(headers.some(h=>aliases.some(a=>h===a||h.includes(a)))?1:0),0);if(score>bestScore){bestScore=score;best={row:i,headers:grid[i]||[]};}if(score===sets.length)return best;}
   return bestScore>=2?best:null;
 }
+const MG_RULE_ROWS=[["Find N6",9,"PHONE"],["Find X9 Ultra",9,"PHONE"],["Find X9s 12GB+256GB",7,"PHONE"],["Find X9s 12GB+512GB",7,"PHONE"],["Find X9 16GB+512GB",7,"PHONE"],["Find X9 12+256",8,"PHONE"],["Reno16 Pro 5G 12GB+256GB",7,"PHONE"],["Reno16 5G 8GB+256GB",5,"PHONE"],["Reno16 F 5G 8GB+256GB",5,"PHONE"],["Reno16 F 5G 8GB+128GB",6,"PHONE"],["Reno15 F 5G 12GB+256GB",5,"PHONE"],["Reno15 Pro 5G 12GB+256GB",8,"PHONE"],["Reno15 5G 12GB+256GB",8,"PHONE"],["Reno15 5G 8GB+256GB",8,"PHONE"],["A7 Pro 5G 8GB+256GB",6,"PHONE"],["A7 Pro 5G 8GB+128GB",6,"PHONE"],["A7 Pro 5G 6GB+256GB",6,"PHONE"],["A6 Pro 5G 12GB+256GB",3,"PHONE"],["A6 Pro 5G 8GB+256GB",3,"PHONE"],["A6 8GB+128GB",3,"PHONE"],["A6 Pro 8GB+256GB",3,"PHONE"],["A6t Pro 8GB+128GB",3,"PHONE"],["A6 Pro 8GB+128GB",2,"PHONE"],["A6x 6GB+256GB",2,"PHONE"],["A6x 4GB+128GB",2,"PHONE"],["A6x 4GB+64GB",2,"PHONE"],["A6c 4GB+128GB",2,"PHONE"],["A6c 4GB+64GB",2,"PHONE"],["A5i 4GB+64GB",2,"PHONE"],["A6t 6GB+256GB",2,"PHONE"],["A6t 4GB+128GB",2,"PHONE"],["A6t 4GB+64GB",2,"PHONE"],["Enco Buds 2",2,"TAI NGHE"],["Enco Buds 2 Pro",2,"TAI NGHE"],["Enco Buds3 Pro",2,"TAI NGHE"],["Enco Buds3",2,"TAI NGHE"],["Enco Air 3",2,"TAI NGHE"],["Enco Air 2 Pro",2,"TAI NGHE"],["Enco Air 4",3,"TAI NGHE"],["Enco Air 4 Pro",3,"TAI NGHE"],["Enco Air5",3,"TAI NGHE"],["Enco Air5s",3,"TAI NGHE"],["Enco Air 5 Pro",3,"TAI NGHE"],["Enco X3S",5,"TAI NGHE"],["Enco Clip2",5,"TAI NGHE"],["Pad Neo 6GB",2,"PAD"],["Pad Neo 8GB",2,"PAD"],["Pad SE Wifi (4-128)",4,"PAD"],["Pad SE Wifi (4-128) Mate",4,"PAD"],["Pad SE LTE (4-128)",4,"PAD"],["Pad SE LTE (8-256) Mate",4,"PAD"],["Pad 3",7,"PAD"],["Pad 5",8,"PAD"],["OPPO Watch X2",8,"WATCH"],["OPPO Watch X2 Mini",8,"WATCH"],["OPPO Watch S (OWWE262)",8,"WATCH"],["OPPO Watch X3",9,"WATCH"],["OPPO Bubble",8,null],["Miếng dán có phí",1,null],["Sạc dự phòng",2,null],["Ốp Lưng",3,"ỐP LƯNG"],["Oppo Care",4,null],["Ống kính Tele OPPO Hasselblad Earth Explorer Kit",5,null],["Find X10 Pro Max 16GB+512GB",9,"Phone"],["Find X10 Pro Max in Titanium Grey Hasselblad Teleconverter Kit",5,null]];
+const MG_RULE_MAP=new Map(MG_RULE_ROWS.map(([model,points,type])=>[mgHeaderKey(model),{model,points,type}]));
+function mgCenterRuleModel(product){
+  const p=String(product??'').trim(),n=p.toLowerCase();
+  if(!p||n.includes('túi giấy'))return '';
+  if(n.includes('ốp lưng'))return 'Ốp Lưng';
+  if(n.includes('sạc dự phòng'))return 'Sạc dự phòng';
+  if(n.includes('cường lực'))return 'Miếng dán có phí';
+  return p;
+}
+function mgRuleFor(model){return MG_RULE_MAP.get(mgHeaderKey(model))||null;}
 function mgIsCenterSales(r){const type=String(r.export_type||'').trim().toLowerCase(),status=String(r.status||'').trim().toLowerCase();return (!type||type.includes('bán'))&&(!status||status.includes('hiệu lực'));}
 function mgGet(row,headers,aliases){const normalized=headers.map(mgHeaderKey);for(const alias of aliases){const a=mgHeaderKey(alias),i=normalized.findIndex(h=>h===a||h.includes(a));if(i>=0){const key=headers[i];if(row[key]!==undefined&&row[key]!==null&&String(row[key]).trim()!=='')return row[key];}}return null;}
 function mgOrderValue(row,headers,src){
@@ -104,6 +115,7 @@ function mgUpload(file,src){
         const date=mgDateValue(mgGet(row,headers,['Ngày xuất bán','Ngày bán','Sales date','Ngày']));
         const creator=mgText(mgGet(row,headers,['Người lên đơn','Created by','Người bán']));
         const kpi=mgText(mgGet(row,headers,['Name KPI 1','KPI staff','Nhân viên KPI']));
+        const ruleModel=mgCenterRuleModel(product),rule=mgRuleFor(ruleModel);
         a.push({
           order_no:mgText(mgGet(row,headers,['Đơn hàng tổng','Order No','Order number']))||mgText(order),
           shop:mgText(mgGet(row,headers,['Tên Brandshop','Brandshop'])),
@@ -115,13 +127,13 @@ function mgUpload(file,src){
           creator,kpi_staff:kpi||creator,
           export_type:mgText(mgGet(row,headers,['Loại xuất','Export type'])),
           status:mgText(mgGet(row,headers,['Trạng thái','Status'])),
-          model:itemCode||product,
-          type:mgText(mgGet(row,headers,['Danh mục','Category','Type','Nhóm hàng'])),
-          points:mgNum(mgGet(row,headers,['Total KPI','Điểm','Points']))
+          model:ruleModel||product,
+          type:rule?.type||mgText(mgGet(row,headers,['Danh mục','Category','Type','Nhóm hàng'])),
+          points:rule?Number(rule.points)||0:mgNum(mgGet(row,headers,['Điểm','Points']))
         });
       }
     }
-    else{for(const row of rows){const order=mgOrderValue(row,headers,'GCSM');if(!order)continue;const date=mgDateValue(mgGet(row,headers,['Sales time','Created on','Ngày tạo','Ngày bán'])),creator=mgText(mgGet(row,headers,['Created by','Người tạo','Seller'])).split('（')[0].split('(')[0].trim();a.push({order_no:mgText(order),shop:mgText(mgGet(row,headers,['Name of service center','Service center'])),status:mgText(mgGet(row,headers,['Order status','Status'])),creator,time:date,date:date.slice(0,10),payment:mgText(mgGet(row,headers,['Payment method']))||'Khác',paid_amount:mgNum(mgGet(row,headers,['Paid amount (receivable after deduction)','Paid amount','Receivable'])),retail_price:mgNum(mgGet(row,headers,['Retail price','Price'])),product:mgText(mgGet(row,headers,['Sales Product Name','Product name'])),qty:mgNum(mgGet(row,headers,['Quantity','Qty'])),model:mgText(mgGet(row,headers,['Marketing model','Model'])),type:mgText(mgGet(row,headers,['Type','Product type']))||'Phụ kiện / Khác',points:mgNum(mgGet(row,headers,['Điểm','Points']))});}}
+    else{for(const row of rows){const order=mgOrderValue(row,headers,'GCSM');if(!order)continue;const date=mgDateValue(mgGet(row,headers,['Sales time','Created on','Ngày tạo','Ngày bán'])),creator=mgText(mgGet(row,headers,['Created by','Người tạo','Seller'])).split('（')[0].split('(')[0].trim(),product=mgText(mgGet(row,headers,['Sales Product Name','Product name'])),rawType=mgText(mgGet(row,headers,['Type','Product type'])),model=mgText(mgGet(row,headers,['Marketing model','Model']))||product,rule=mgRuleFor(rawType)||mgRuleFor(model)||mgRuleFor(product);a.push({order_no:mgText(order),shop:mgText(mgGet(row,headers,['Name of service center','Service center'])),status:mgText(mgGet(row,headers,['Order status','Status'])),creator,time:date,date:date.slice(0,10),payment:mgText(mgGet(row,headers,['Payment method']))||'Khác',paid_amount:mgNum(mgGet(row,headers,['Paid amount (receivable after deduction)','Paid amount','Receivable'])),retail_price:mgNum(mgGet(row,headers,['Retail price','Price'])),product,qty:mgNum(mgGet(row,headers,['Quantity','Qty'])),model,type:rule?.type||rawType||'Phụ kiện / Khác',points:rule?Number(rule.points)||0:mgNum(mgGet(row,headers,['Điểm','Points']))});}}
     if(!a.length)throw Error('Đã tìm thấy sheet "'+sheetName+'" nhưng không đọc được mã đơn. Các cột tiêu đề: '+headers.filter(Boolean).slice(0,40).join(' | ')+'. Kiểm tra cột mã đơn hoặc gửi ảnh hàng tiêu đề để bổ sung nhận diện.');
     const key=src==='CENTER'?'centerRecords':'gcsmRecords',old=currentData[key],metaKey=src==='CENTER'?'centerFileName':'gcsmFileName',oldMeta=currentData.meta[metaKey],oldUpdated=currentData.meta.uploadedAt;currentData[key]=a;currentData.meta[metaKey]=file.name;currentData.meta.uploadedAt='Cập nhật '+new Date().toLocaleString('vi-VN');
     if(!mgPersist()){currentData[key]=old;if(oldMeta===undefined)delete currentData.meta[metaKey];else currentData.meta[metaKey]=oldMeta;currentData.meta.uploadedAt=oldUpdated;throw Error('Không đủ dung lượng lưu trên trình duyệt.');}
