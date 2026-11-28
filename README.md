@@ -1,14 +1,16 @@
-# OPPO Store Operations Dashboard v2 (VN001034)
+# OPPO Store Operations Dashboard v3 (VN001034)
 
-Dashboard theo dõi chỉ số bán hàng (Brandshop), hiệu suất nhân sự & dịch vụ sau bán hàng (Service Center) trên nền web tĩnh.
+Dashboard theo dõi chỉ số bán hàng (Brandshop), hiệu suất nhân sự & dịch vụ sau bán hàng (Service Center) trên nền web tĩnh, đồng bộ dữ liệu thực tế từ file `2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx`.
 
-## Cập nhật ở phiên bản v2
-1. **Tinh gọn thẻ KPI tổng quan**: Loại bỏ 2 mục *Service Volume (Mới)* và *Chẩn đoán sau sửa chữa*, tập trung vào **Tổng điểm doanh số** và **KPI TAT 1H**.
-2. **Bảng Chi Tiết Đơn Hàng**: Tra cứu mã phiếu, thời gian, loại giao dịch, sản phẩm, nhân viên phụ trách kèm bộ lọc theo từ khóa và trạng thái đơn hàng.
-3. **Bảng Chi Tiết Doanh Số Sản Phẩm**: Thống kê sản lượng bán, hệ số quy đổi điểm và doanh thu ước tính từng SKU/nhóm hàng, hỗ trợ lọc theo nhóm sản phẩm.
-4. **Năng suất Kỹ Thuật Viên (2 KTV)**: Tập trung theo dõi hiệu suất và chất lượng TAT 1H của 2 nhân sự kỹ thuật chính tại trạm.
-5. **Bảng Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự**: Theo dõi tỷ trọng đóng góp điểm máy, phụ kiện, Oppo Care/MDCL và mức đạt KPI của từng nhân sự bán hàng.
+## Tính năng chính (v3)
+1. **KPI Tổng Quan Tinh Gọn**: Tập trung vào **Tổng điểm doanh số (211/176 điểm)** và **KPI TAT 1H (99.44%)**, loại bỏ các thẻ phụ không cần thiết.
+2. **Chi Tiết Đơn Hàng (`Center SO` & `GCSM SO`)**: Tra cứu mã đơn, ngày giờ, sản phẩm, nhân viên phụ trách, điểm và doanh thu thực thu kèm thanh tìm kiếm và lọc trạng thái.
+3. **Chi Tiết Doanh Số Sản Phẩm**: Tổng hợp sản lượng bán, hệ số điểm trung bình, tổng điểm quy đổi và doanh thu từng dòng sản phẩm.
+4. **Năng Suất Kỹ Thuật Viên (2 KTV)**: Theo dõi chuyên sâu 2 KTV chính (`PHAN CHÍ TRUNG` và `ĐOÀN MINH HÙNG`).
+5. **Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự**: Tính tổng điểm đóng góp (Máy, Phụ kiện & IoT, Oppo Care & MDCL) và tỷ trọng % từng nhân sự.
+6. **Lưu Trữ Theo Lần Cập Nhật Cuối**: Mọi thao tác Upload Excel mới hoặc điều chỉnh Target thủ công đều tự động lưu vào `localStorage` kèm thời gian cập nhật cuối cùng.
 
-## Cách đưa lên GitHub Pages
-1. Upload toàn bộ 4 file (`index.html`, `style.css`, `app.js`, `README.md`) lên thư mục gốc của Repository trên GitHub.
-2. Vào **Settings** → **Pages** → Chọn nhánh `main` (`/root`) → Bấm **Save**.
+## Hướng dẫn triển khai GitHub Pages
+1. Giải nén file `oppo-tiengiang-dashboard-v3.zip`.
+2. Upload toàn bộ 4 file (`index.html`, `style.css`, `app.js`, `README.md`) lên thư mục gốc của Repository GitHub.
+3. Vào **Settings** → **Pages** → Chọn nhánh `main` (`/root`) → Bấm **Save**.

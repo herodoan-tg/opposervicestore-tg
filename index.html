@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPPO Experience & Service Store - Dashboard Vận Hành v2</title>
+  <title>OPPO Experience & Service Store - Dashboard Vận Hành v3</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -15,7 +15,7 @@
       <div>
         <h1 id="shopTitle">OPPO Experience & Service Store Tiền Giang</h1>
         <p class="subtitle">
-          Mã trạm: <strong id="scCode">VN001034</strong> • Cập nhật lần cuối: <span id="lastUpdated">Dữ liệu mẫu T11/2026</span>
+          Mã trạm: <strong id="scCode">VN001034</strong> • Cập nhật lần cuối: <span id="lastUpdated">2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx</span>
         </p>
       </div>
     </div>
@@ -37,7 +37,7 @@
   </header>
 
   <main class="container">
-    <!-- KPI Cards: Đã bỏ SERVICE VOLUME (MỚI) và CHẨN ĐOÁN SAU SỬA CHỮA -->
+    <!-- KPI Cards: Bỏ SERVICE VOLUME (MỚI) và CHẨN ĐOÁN SAU SỬA CHỮA -->
     <section class="kpi-grid kpi-grid-2">
       <div class="kpi-card highlight">
         <div class="kpi-header">
@@ -147,14 +147,14 @@
       </div>
     </section>
 
-    <!-- Mục mới 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự -->
+    <!-- Mục 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>🏆 Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự</h3>
           <span class="hint">Phân tích tỷ trọng điểm số, nhóm hàng chủ lực và mức độ hoàn thành KPI cá nhân</span>
         </div>
-        <div class="badge badge-info" id="staffTotalBadge">Tổng điểm quy đổi: 211 điểm</div>
+        <div class="badge badge-info" id="staffTotalBadge">Tổng điểm nhân sự ghi nhận: 205 điểm</div>
       </div>
       <div class="table-responsive">
         <table id="staffContributionTable">
@@ -175,12 +175,12 @@
       </div>
     </section>
 
-    <!-- Mục mới 3: Bảng xem chi tiết doanh số sản phẩm -->
+    <!-- Mục 3: Bảng xem chi tiết doanh số sản phẩm -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>📦 Chi Tiết Doanh Số Theo Sản Phẩm (Product Sales Breakdown)</h3>
-          <span class="hint">Theo dõi sản lượng bán ra, hệ số quy đổi điểm và doanh thu ước tính từng model/nhóm hàng</span>
+          <span class="hint">Theo dõi sản lượng bán ra, hệ số quy đổi điểm và doanh thu từng model/nhóm hàng</span>
         </div>
         <div class="filter-group no-print">
           <select id="filterProductCat" class="select-input">
@@ -206,15 +206,15 @@
       </div>
     </section>
 
-    <!-- Mục mới 2: Bảng xem chi tiết đơn hàng -->
+    <!-- Mục 2: Bảng xem chi tiết đơn hàng -->
     <section class="card">
       <div class="card-header">
         <div>
-          <h3>🧾 Chi Tiết Đơn Hàng & Phiếu Giao Dịch (Sale Orders / Service Tickets)</h3>
-          <span class="hint">Danh sách giao dịch bán hàng, phụ kiện và dịch vụ gần nhất</span>
+          <h3>🧾 Chi Tiết Đơn Hàng & Phiếu Giao Dịch (Center SO & GCSM SO)</h3>
+          <span class="hint">Danh sách giao dịch bán máy, phụ kiện và gói dịch vụ</span>
         </div>
         <div class="filter-group no-print">
-          <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã phiếu, khách hàng, sản phẩm..." />
+          <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã phiếu, nhân viên, sản phẩm..." />
           <select id="filterOrderStatus" class="select-input">
             <option value="ALL">Tất cả trạng thái</option>
             <option value="Hoàn thành">Hoàn thành</option>
@@ -251,11 +251,11 @@
         <button class="close-btn" id="closeTargetModal">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống sẽ tự động tính lại % hoàn thành và lưu vào trình duyệt.</p>
+        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống sẽ tự động tính lại % hoàn thành và lưu lại theo lần cập nhật cuối cùng.</p>
         <div id="targetInputsGrid" class="target-grid"></div>
       </div>
       <div class="modal-footer">
-        <button id="btnResetDefault" class="btn btn-ghost">Khôi phục mặc định</button>
+        <button id="btnResetDefault" class="btn btn-ghost">Khôi phục bản gốc T11</button>
         <button id="btnSaveTarget" class="btn btn-primary">💾 Lưu Target</button>
       </div>
     </div>
