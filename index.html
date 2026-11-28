@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPPO Experience & Service Store - Dashboard Vận Hành v5</title>
+  <title>OPPO Experience & Service Store - Dashboard Vận Hành v4</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -37,7 +37,7 @@
   </header>
 
   <main class="container">
-    <!-- KPI Cards: Tổng điểm doanh số & TAT (ĐÁNH GIÁ KPI SERVICE 2025) -->
+    <!-- KPI Cards: Tổng điểm doanh số & KPI TAT 1H -->
     <section class="kpi-grid kpi-grid-2">
       <div class="kpi-card highlight">
         <div class="kpi-header">
@@ -49,58 +49,15 @@
         <div class="kpi-foot">Vượt chỉ tiêu <strong id="diffTotalScore">+35</strong> điểm</div>
       </div>
 
-      <div class="kpi-card service-kpi">
+      <div class="kpi-card">
         <div class="kpi-header">
-          <span>TAT • ĐÁNH GIÁ KPI SERVICE 2025</span>
-          <span class="badge" id="badgeTatStatus">ĐẠT CHUẨN</span>
+          <span>KPI TAT 1H (SỬA CHỮA NHANH)</span>
+          <span class="badge badge-success" id="badgeTat">ĐẠT</span>
         </div>
-        <div class="tat-metrics-grid" id="tatServiceMetrics">
-          <div class="tat-metric-box">
-            <span>TAT 1H (Sửa nhanh)</span>
-            <strong id="tat1hMain">99.44%</strong>
-          </div>
-          <div class="tat-metric-box">
-            <span>TAT-KS 1H</span>
-            <strong id="tatKs1h">100.00%</strong>
-          </div>
-          <div class="tat-metric-box">
-            <span>TAT 24H</span>
-            <strong id="tat24h">100.00%</strong>
-          </div>
-          <div class="tat-metric-box">
-            <span>TAT 72H</span>
-            <strong id="tat72h">100.00%</strong>
-          </div>
+        <div class="kpi-value" id="valTat1h">99.44%</div>
+        <div class="kpi-foot">
+          Tổng phiếu tiếp nhận: <strong id="valTotalTickets">446</strong> • TAT-KS 1H: <strong>100%</strong> • NPS: <strong id="valNps">17.86%</strong> • Tỷ lệ hủy: <strong id="valCancelRate">4.26%</strong>
         </div>
-        <div class="kpi-foot" id="tatServiceFoot">
-          Tổng phiếu: <strong id="valTotalTickets">446</strong> • NPS: <strong id="valNps">17.86%</strong> • Tỷ lệ hủy: <strong id="valCancelRate">4.26%</strong>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hiển thị thêm dữ liệu Bảng báo cáo KPI / KPI报表 ở sheet Tổng Hợp -->
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h3>📋 Bảng Báo Cáo KPI / KPI报表 (Sheet Tổng Hợp)</h3>
-          <span class="hint">Hiển thị đầy đủ các chỉ tiêu & điểm đánh giá KPI từ bảng KPI报表 trên sheet Tổng hợp</span>
-        </div>
-        <div class="badge badge-info" id="kpiReportBadge">Nguồn: Sheet Tổng hợp — KPI报表</div>
-      </div>
-      <div class="table-responsive">
-        <table id="kpiReportTable">
-          <thead>
-            <tr>
-              <th>Hạng mục / Chỉ tiêu KPI</th>
-              <th class="num">Chỉ tiêu / Target</th>
-              <th class="num">Thực tế / Đạt</th>
-              <th class="num">Điểm / Hệ số</th>
-              <th class="num">% Hoàn thành</th>
-              <th>Đánh giá</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
       </div>
     </section>
 
@@ -190,7 +147,7 @@
       </div>
     </section>
 
-    <!-- Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (GCSM SO + Center SO) -->
+    <!-- Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (Center SO + GCSM SO) -->
     <section class="card">
       <div class="card-header">
         <div>
@@ -259,7 +216,7 @@
       </div>
     </section>
 
-    <!-- Chi tiết đơn hàng & phiếu giao dịch (GCSM SO + Center SO) -->
+    <!-- Chi tiết đơn hàng & phiếu giao dịch (Sale Orders / Service Tickets từ GCSM SO + Center SO) -->
     <section class="card">
       <div class="card-header">
         <div>
