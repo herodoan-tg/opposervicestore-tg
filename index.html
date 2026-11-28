@@ -199,6 +199,27 @@
           <div class="mt-5 pt-4 border-t border-slate-100 grid grid-cols-3 gap-2 text-center" id="serviceMiniStats"></div>
         </div>
       </div>
+
+      <!-- Sales contribution by staff: moved into Overview KPI -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Đánh Giá Đóng Góp Doanh Số & Điểm Theo Nhân Sự</h3><p class="text-xs text-slate-500 mb-3">Đối chiếu nhân viên giữa Center SO và GCSM SO</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Nhân viên</th><th class="p-2 text-right">Center SO</th><th class="p-2 text-right">GCSM SO</th><th class="p-2 text-right">Tổng điểm</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Tỷ trọng</th></tr></thead><tbody id="mgStaffBody" class="text-xs divide-y"></tbody></table></div></div>
+
+      <!-- Dynamic KPI alerts and recommended actions -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Cảnh Báo & Đề Xuất Hành Động</h3>
+            <p class="text-xs text-slate-500 mt-1">Phân tích tự động theo tiến độ Target, tốc độ đạt điểm và dữ liệu bán hàng hiện tại.</p>
+          </div>
+          <span class="text-xs rounded-full bg-blue-50 text-blue-700 px-3 py-1 font-semibold">Cập nhật theo dữ liệu & bộ lọc</span>
+        </div>
+        <div id="mgOverviewInsights" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <p class="text-sm text-slate-500">Đang phân tích dữ liệu…</p>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-3">Lưu ý: tiến độ Target lấy từ bảng KPI tổng hợp; đánh giá nhân sự và sản phẩm sử dụng giao dịch Center SO / GCSM SO theo bộ lọc đang chọn.</p>
+      </section>
+
+      <!-- Product sales detail follows staff contribution -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Chi Tiết Doanh Số Theo Sản Phẩm</h3><p class="text-xs text-slate-500 mb-3">Tổng hợp hai nguồn, có lọc ngày và nhân viên</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Sản phẩm / Model</th><th class="p-2">Nhóm</th><th class="p-2 text-right">SL</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Điểm</th></tr></thead><tbody id="mgProductBody" class="text-xs divide-y"></tbody></table></div></div>
     </section>
 
     <!-- TAB 2: SALES & PRODUCTS -->
@@ -263,7 +284,7 @@
     </section>
 
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Chi Tiết Doanh Số Theo Sản Phẩm</h3><p class="text-xs text-slate-500 mb-3">Tổng hợp hai nguồn, có lọc ngày và nhân viên</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Sản phẩm / Model</th><th class="p-2">Nhóm</th><th class="p-2 text-right">SL</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Điểm</th></tr></thead><tbody id="mgProductBody" class="text-xs divide-y"></tbody></table></div></div>
+
     <!-- TAB 3: STAFF PRODUCTIVITY -->
     <section id="tab-staff" class="tab-content hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -311,7 +332,7 @@
     </section>
 
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Đánh Giá Đóng Góp Doanh Số & Điểm Theo Nhân Sự</h3><p class="text-xs text-slate-500 mb-3">Đối chiếu nhân viên giữa Center SO và GCSM SO</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Nhân viên</th><th class="p-2 text-right">Center SO</th><th class="p-2 text-right">GCSM SO</th><th class="p-2 text-right">Tổng điểm</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Tỷ trọng</th></tr></thead><tbody id="mgStaffBody" class="text-xs divide-y"></tbody></table></div></div>
+
     <!-- TAB 4: TRANSACTIONS EXPLORER -->
     <section id="tab-transactions" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
