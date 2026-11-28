@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPPO Experience & Service Store - Dashboard Vận Hành v5</title>
+  <title>OPPO Experience & Service Store - Dashboard Vận Hành v2</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -15,7 +15,7 @@
       <div>
         <h1 id="shopTitle">OPPO Experience & Service Store Tiền Giang</h1>
         <p class="subtitle">
-          Mã trạm: <strong id="scCode">VN001034</strong> • Cập nhật lần cuối: <span id="lastUpdated">2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx</span>
+          Mã trạm: <strong id="scCode">VN001034</strong> • Cập nhật lần cuối: <span id="lastUpdated">Dữ liệu mẫu T11/2026</span>
         </p>
       </div>
     </div>
@@ -37,7 +37,7 @@
   </header>
 
   <main class="container">
-    <!-- KPI Cards: Tổng điểm doanh số & TAT (ĐÁNH GIÁ KPI SERVICE 2025) -->
+    <!-- KPI Cards: Đã bỏ SERVICE VOLUME (MỚI) và CHẨN ĐOÁN SAU SỬA CHỮA -->
     <section class="kpi-grid kpi-grid-2">
       <div class="kpi-card highlight">
         <div class="kpi-header">
@@ -49,58 +49,15 @@
         <div class="kpi-foot">Vượt chỉ tiêu <strong id="diffTotalScore">+35</strong> điểm</div>
       </div>
 
-      <div class="kpi-card service-kpi">
+      <div class="kpi-card">
         <div class="kpi-header">
-          <span>TAT • ĐÁNH GIÁ KPI SERVICE 2025</span>
-          <span class="badge" id="badgeTatStatus">ĐẠT CHUẨN</span>
+          <span>KPI TAT 1H (SỬA CHỮA NHANH)</span>
+          <span class="badge badge-success" id="badgeTat">ĐẠT</span>
         </div>
-        <div class="tat-metrics-grid" id="tatServiceMetrics">
-          <div class="tat-metric-box">
-            <span>TAT 1H (Sửa nhanh)</span>
-            <strong id="tat1hMain">99.44%</strong>
-          </div>
-          <div class="tat-metric-box">
-            <span>TAT-KS 1H</span>
-            <strong id="tatKs1h">100.00%</strong>
-          </div>
-          <div class="tat-metric-box">
-            <span>TAT 24H</span>
-            <strong id="tat24h">100.00%</strong>
-          </div>
-          <div class="tat-metric-box">
-            <span>TAT 72H</span>
-            <strong id="tat72h">100.00%</strong>
-          </div>
+        <div class="kpi-value" id="valTat1h">99.44%</div>
+        <div class="kpi-foot">
+          Tổng phiếu tiếp nhận: <strong id="valTotalTickets">446</strong> • TAT-KS 1H: <strong>100%</strong> • NPS: <strong id="valNps">17.86%</strong> • Tỷ lệ hủy: <strong id="valCancelRate">4.26%</strong>
         </div>
-        <div class="kpi-foot" id="tatServiceFoot">
-          Tổng phiếu: <strong id="valTotalTickets">446</strong> • NPS: <strong id="valNps">17.86%</strong> • Tỷ lệ hủy: <strong id="valCancelRate">4.26%</strong>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hiển thị thêm dữ liệu Bảng báo cáo KPI / KPI报表 ở sheet Tổng Hợp -->
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h3>📋 Bảng Báo Cáo KPI / KPI报表 (Sheet Tổng Hợp)</h3>
-          <span class="hint">Hiển thị đầy đủ các chỉ tiêu & điểm đánh giá KPI từ bảng KPI报表 trên sheet Tổng hợp</span>
-        </div>
-        <div class="badge badge-info" id="kpiReportBadge">Nguồn: Sheet Tổng hợp — KPI报表</div>
-      </div>
-      <div class="table-responsive">
-        <table id="kpiReportTable">
-          <thead>
-            <tr>
-              <th>Hạng mục / Chỉ tiêu KPI</th>
-              <th class="num">Chỉ tiêu / Target</th>
-              <th class="num">Thực tế / Đạt</th>
-              <th class="num">Điểm / Hệ số</th>
-              <th class="num">% Hoàn thành</th>
-              <th>Đánh giá</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
       </div>
     </section>
 
@@ -190,28 +147,27 @@
       </div>
     </section>
 
-    <!-- Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (GCSM SO + Center SO) -->
+    <!-- Mục mới 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>🏆 Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự</h3>
-          <span class="hint">Tổng hợp từ 2 sheet GCSM SO và Center SO • Chuẩn hóa đúng tên nhân viên thực hiện</span>
+          <span class="hint">Phân tích tỷ trọng điểm số, nhóm hàng chủ lực và mức độ hoàn thành KPI cá nhân</span>
         </div>
-        <div class="badge badge-info" id="staffTotalBadge">Tổng điểm nhân sự (GCSM SO + Center SO): 0 điểm</div>
+        <div class="badge badge-info" id="staffTotalBadge">Tổng điểm quy đổi: 211 điểm</div>
       </div>
       <div class="table-responsive">
         <table id="staffContributionTable">
           <thead>
             <tr>
-              <th>Tên nhân sự</th>
-              <th>Nguồn ghi nhận</th>
-              <th class="num">Số đơn / phiếu</th>
+              <th>Nhân sự</th>
+              <th>Chức danh / Mã NV</th>
               <th class="num">Máy (Phone/Pad)</th>
               <th class="num">Phụ kiện & IoT</th>
               <th class="num">Oppo Care & MDCL</th>
-              <th class="num">Tổng điểm</th>
-              <th class="num">Doanh thu (VNĐ)</th>
-              <th class="num">Tỷ trọng điểm</th>
+              <th class="num">Tổng điểm ĐG</th>
+              <th class="num">Tỷ trọng đóng góp</th>
+              <th>Đánh giá hiệu suất</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -219,24 +175,16 @@
       </div>
     </section>
 
-    <!-- Chi tiết doanh số theo sản phẩm (GCSM SO + Center SO) -->
+    <!-- Mục mới 3: Bảng xem chi tiết doanh số sản phẩm -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>📦 Chi Tiết Doanh Số Theo Sản Phẩm (Product Sales Breakdown)</h3>
-          <span class="hint">Tổng hợp sản phẩm, điểm quy đổi và doanh thu từ 2 sheet GCSM SO và Center SO</span>
+          <span class="hint">Theo dõi sản lượng bán ra, hệ số quy đổi điểm và doanh thu ước tính từng model/nhóm hàng</span>
         </div>
         <div class="filter-group no-print">
-          <select id="filterProductSource" class="select-input">
-            <option value="ALL">Tất cả nguồn (Center SO + GCSM SO)</option>
-            <option value="Center SO">Chỉ Center SO</option>
-            <option value="GCSM SO">Chỉ GCSM SO</option>
-          </select>
           <select id="filterProductCat" class="select-input">
             <option value="ALL">Tất cả nhóm hàng</option>
-          </select>
-          <select id="filterProductStaff" class="select-input">
-            <option value="ALL">Tất cả nhân viên</option>
           </select>
         </div>
       </div>
@@ -247,9 +195,8 @@
               <th>Mã SKU / Model</th>
               <th>Tên sản phẩm</th>
               <th>Nhóm hàng</th>
-              <th>Nguồn sheet</th>
-              <th>Nhân viên</th>
-              <th class="num">Số lượng</th>
+              <th class="num">Số lượng bán</th>
+              <th class="num">Hệ số điểm</th>
               <th class="num">Tổng điểm</th>
               <th class="num">Doanh thu (VNĐ)</th>
             </tr>
@@ -259,20 +206,15 @@
       </div>
     </section>
 
-    <!-- Chi tiết đơn hàng & phiếu giao dịch (GCSM SO + Center SO) -->
+    <!-- Mục mới 2: Bảng xem chi tiết đơn hàng -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>🧾 Chi Tiết Đơn Hàng & Phiếu Giao Dịch (Sale Orders / Service Tickets)</h3>
-          <span class="hint">Dữ liệu hợp nhất từ 2 sheet GCSM SO và Center SO • Hiển thị đúng tên nhân viên phụ trách</span>
+          <span class="hint">Danh sách giao dịch bán hàng, phụ kiện và dịch vụ gần nhất</span>
         </div>
         <div class="filter-group no-print">
-          <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã phiếu, tên nhân viên, sản phẩm..." />
-          <select id="filterOrderSource" class="select-input">
-            <option value="ALL">Tất cả sheet</option>
-            <option value="Center SO">Center SO</option>
-            <option value="GCSM SO">GCSM SO</option>
-          </select>
+          <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã phiếu, khách hàng, sản phẩm..." />
           <select id="filterOrderStatus" class="select-input">
             <option value="ALL">Tất cả trạng thái</option>
             <option value="Hoàn thành">Hoàn thành</option>
@@ -286,11 +228,10 @@
           <thead>
             <tr>
               <th>Mã Đơn / Phiếu</th>
-              <th>Sheet nguồn</th>
               <th>Ngày giờ</th>
               <th>Loại giao dịch</th>
               <th>Sản phẩm / Dịch vụ</th>
-              <th>Tên nhân viên</th>
+              <th>Nhân viên phụ trách</th>
               <th class="num">Điểm</th>
               <th class="num">Giá trị (VNĐ)</th>
               <th>Trạng thái</th>
@@ -310,11 +251,11 @@
         <button class="close-btn" id="closeTargetModal">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống tự động lưu lại giá trị của lần chỉnh sửa cuối cùng.</p>
+        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống sẽ tự động tính lại % hoàn thành và lưu vào trình duyệt.</p>
         <div id="targetInputsGrid" class="target-grid"></div>
       </div>
       <div class="modal-footer">
-        <button id="btnResetDefault" class="btn btn-ghost">Khôi phục bản gốc T11</button>
+        <button id="btnResetDefault" class="btn btn-ghost">Khôi phục mặc định</button>
         <button id="btnSaveTarget" class="btn btn-primary">💾 Lưu Target</button>
       </div>
     </div>
@@ -338,6 +279,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=6.1"></script>
+  <script src="app.js"></script>
 </body>
 </html>

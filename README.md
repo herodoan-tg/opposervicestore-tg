@@ -1,9 +1,14 @@
-# OPPO Store Operations Dashboard v5 (VN001034)
+# OPPO Store Operations Dashboard v2 (VN001034)
 
-Dashboard theo dõi vận hành cho **OPPO Experience & Service Store Tiền Giang (`VN001034`)**, bám sát dữ liệu file `2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx`.
+Dashboard theo dõi chỉ số bán hàng (Brandshop), hiệu suất nhân sự & dịch vụ sau bán hàng (Service Center) trên nền web tĩnh.
 
-## Cập nhật nổi bật ở bản v5
-1. **Giao diện sáng rõ, dễ đọc**: Chuyển sang nền sáng (`#f4f7fb` / `#ffffff`), chữ đậm tương phản cao (`#0f172a`) và biểu đồ sáng rõ.
-2. **Bảng báo cáo KPI / KPI报表 trên sheet Tổng hợp**: Hiển thị ngay trên giao diện chính với đầy đủ chỉ tiêu, thực tế, điểm và % hoàn thành.
-3. **TAT tập trung vào mục ĐÁNH GIÁ KPI SERVICE 2025**: Hiển thị rõ các chỉ số TAT (`TAT 1H`, `TAT-KS 1H`, `TAT 24H`, `TAT 72H`) cùng tổng phiếu, NPS và tỷ lệ hủy.
-4. **Dữ liệu nhân sự, sản phẩm & đơn hàng từ GCSM SO và Center SO + Lưu Target lần chỉnh cuối cùng**: Giữ nguyên cơ chế tổng hợp chuẩn xác và lưu trạng thái chỉnh sửa cuối cùng.
+## Cập nhật ở phiên bản v2
+1. **Tinh gọn thẻ KPI tổng quan**: Loại bỏ 2 mục *Service Volume (Mới)* và *Chẩn đoán sau sửa chữa*, tập trung vào **Tổng điểm doanh số** và **KPI TAT 1H**.
+2. **Bảng Chi Tiết Đơn Hàng**: Tra cứu mã phiếu, thời gian, loại giao dịch, sản phẩm, nhân viên phụ trách kèm bộ lọc theo từ khóa và trạng thái đơn hàng.
+3. **Bảng Chi Tiết Doanh Số Sản Phẩm**: Thống kê sản lượng bán, hệ số quy đổi điểm và doanh thu ước tính từng SKU/nhóm hàng, hỗ trợ lọc theo nhóm sản phẩm.
+4. **Năng suất Kỹ Thuật Viên (2 KTV)**: Tập trung theo dõi hiệu suất và chất lượng TAT 1H của 2 nhân sự kỹ thuật chính tại trạm.
+5. **Bảng Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự**: Theo dõi tỷ trọng đóng góp điểm máy, phụ kiện, Oppo Care/MDCL và mức đạt KPI của từng nhân sự bán hàng.
+
+## Cách đưa lên GitHub Pages
+1. Upload toàn bộ 4 file (`index.html`, `style.css`, `app.js`, `README.md`) lên thư mục gốc của Repository trên GitHub.
+2. Vào **Settings** → **Pages** → Chọn nhánh `main` (`/root`) → Bấm **Save**.
