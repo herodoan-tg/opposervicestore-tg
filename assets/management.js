@@ -4,6 +4,66 @@ const MG_BASE_KEY='oppo_shop_dashboard_base_targets_v1';
 let mgTargets={};
 let mgBaseTargets={};
 let mgBaseFile='';
+let mgInventoryPromise=null,mgInventory=null,mgInventoryError='';
+const MG_INV_URL='https://raw.githubusercontent.com/herodoan-tg/opposervicestore-tg/main/T%E1%BB%93n%20kho%20Center.csv';
+const MG_AGE_URL='https://raw.githubusercontent.com/herodoan-tg/opposervicestore-tg/main/T%E1%BB%93n%20kho%20tr%C3%AAn%2060%20day.csv';
+function mgCsvRows(text){
+  const lines=String(text||'').replace(/^\\uFEFF/,'').split(/\\r?\\n/).filter((x,i,a)=>x.length||i<a.length-1);
+  if(!lines.length)return [];
+  const parseLine=line=>{const out=[];let v='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){v+='"';i++;}else q=!q;}else if(c===','&&!q){out.push(v);v='';}else v+=c;}out.push(v);return out;};
+  const headers=parseLine(lines.shift()).map(x=>String(x||'').trim());
+  return lines.filter(x=>x.trim()).map(line=>{const cells=parseLine(line),o={};headers.forEach((h,i)=>o[h]=cells[i]??'');return o;});
+}
+function mgInvNum(v){const n=Number(String(v??'').replace(/,/g,'').trim());return Number.isFinite(n)?n:0;}
+function mgLoadInventory(){
+  if(mgInventory)return Promise.resolve(mgInventory);
+  if(mgInventoryPromise)return mgInventoryPromise;
+  mgInventoryPromise=Promise.all([fetch(MG_INV_URL,{cache:'no-store'}),fetch(MG_AGE_URL,{cache:'no-store'})]).then(async rs=>{
+    if(rs.some(r=>!r.ok))throw new Error('Không tải được CSV tồn kho từ GitHub.');
+    const [stockText,ageText]=await Promise.all(rs.map(r=>r.text()));
+    const stock=mgCsvRows(stockText),aged=mgCsvRows(ageText);
+    if(!stock.length||!aged.length||!('Tồn hiện tại' in stock[0])||!('Số ngày lưu kho' in aged[0]))throw new Error('Cấu trúc CSV tồn kho không đúng định dạng dự kiến.');
+    mgInventory={stock,aged,loadedAt:new Date()};
+    return mgInventory;
+  }).catch(e=>{mgInventoryError=e.message||'Lỗi tải dữ liệu tồn kho';mgInventoryPromise=null;throw e;});
+  return mgInventoryPromise;
+}
+function mgRenderInventory(){
+  const root=document.getElementById('mgInventoryPanel');if(!root||!currentData)return;
+  if(!mgInventory){root.innerHTML='<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">'+(mgInventoryError?mgEsc(mgInventoryError):'Đang tải dữ liệu tồn kho từ GitHub…')+'</div>';if(!mgInventoryError)mgLoadInventory().then(()=>mgRenderInventory()).catch(()=>mgRenderInventory());return;}
+  const {stock,aged}=mgInventory,active=stock.filter(r=>mgInvNum(r['Tồn hiện tại'])>0);
+  const qty=key=>active.reduce((s,r)=>s+mgInvNum(r[key]),0);
+  const total=qty('Tồn hiện tại'),retail=active.filter(r=>String(r['Loại']).toLowerCase()==='retailer').reduce((s,r)=>s+mgInvNum(r['Tồn hiện tại']),0),demo=active.filter(r=>String(r['Loại']).toLowerCase()==='demo').reduce((s,r)=>s+mgInvNum(r['Tồn hiện tại']),0);
+  const phone=active.filter(r=>/phone/i.test(r['Hạng mục']||'')).reduce((s,r)=>s+mgInvNum(r['Tồn hiện tại']),0),iot=active.filter(r=>/iot/i.test(r['Hạng mục']||'')).reduce((s,r)=>s+mgInvNum(r['Tồn hiện tại']),0),access=active.filter(r=>/accessor/i.test(r['Hạng mục']||'')).reduce((s,r)=>s+mgInvNum(r['Tồn hiện tại']),0);
+  const days=aged.map(r=>mgInvNum(r['Số ngày lưu kho'])),buckets=[{name:'61–90 ngày',n:days.filter(x=>x>=61&&x<=90).length},{name:'91–180 ngày',n:days.filter(x=>x>=91&&x<=180).length},{name:'181–365 ngày',n:days.filter(x=>x>=181&&x<=365).length},{name:'Trên 365 ngày',n:days.filter(x=>x>365).length}];
+  const ageBy={};aged.forEach(r=>{const name=String(r['Product Details']||'Chưa rõ').trim();const o=ageBy[name]||(ageBy[name]={name,qty:0,max:0,imei:[]});o.qty++;o.max=Math.max(o.max,mgInvNum(r['Số ngày lưu kho']));o.imei.push(String(r.Imei||''));});
+  const center=mgFiltered('CENTER').filter(r=>mgNorm(r.export_type).includes('xuat ban')&&mgNorm(r.status).includes('hieu luc'));
+  const sold={};center.forEach(r=>{const key=mgNorm(r.model||r.product);if(key)sold[key]=(sold[key]||0)+mgNum(r.qty);});
+  const products=Object.values(ageBy).map(p=>{const key=mgNorm(p.name);const matched=Object.prototype.hasOwnProperty.call(sold,key);return {...p,sold:matched?sold[key]:null};}).sort((a,b)=>b.max-a.max||b.qty-a.qty);
+  const matchedImeis=aged.filter(r=>active.some(s=>String(s.Imei||'')===String(r.Imei||''))).length;
+  const pct=total?aged.length/retail*100:0;
+  const card=(label,value,sub)=>'<div class="rounded-xl border border-slate-200 bg-white p-3"><div class="text-[11px] text-slate-500">'+label+'</div><div class="text-2xl font-extrabold text-slate-900 mt-1">'+value+'</div><div class="text-[11px] text-slate-500 mt-1">'+sub+'</div></div>';
+  root.innerHTML=
+    '<div class="grid grid-cols-2 xl:grid-cols-4 gap-3">'+
+    card('Tổng tồn hiện tại',mgFmt(total),'Retailer '+mgFmt(retail)+' • Demo '+mgFmt(demo))+
+    card('Điện thoại',mgFmt(phone),'Đơn vị đang tồn')+
+    card('IoT',mgFmt(iot),'Đơn vị đang tồn')+
+    card('Phụ kiện',mgFmt(access),'Đơn vị đang tồn')+'</div>'+
+    '<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">'+
+    '<div class="rounded-xl border border-slate-200 p-4"><div class="font-semibold text-sm mb-3">Tuổi tồn trên 60 ngày</div>'+
+    '<div class="flex items-end gap-2 mb-3"><span class="text-3xl font-extrabold text-rose-600">'+aged.length+'</span><span class="text-xs text-slate-500 mb-1">IMEI / thiết bị • '+pct.toFixed(1)+'% so với tồn Retailer (tham khảo)</span></div>'+
+    buckets.map(b=>'<div class="mb-2"><div class="flex justify-between text-xs mb-1"><span>'+b.name+'</span><b>'+b.n+'</b></div><div class="h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:'+(aged.length?b.n/aged.length*100:0)+'%"></div></div></div>').join('')+
+    '<div class="text-[11px] text-slate-500 mt-3">Đối chiếu IMEI tồn lâu với tồn hiện tại: '+matchedImeis+'/'+aged.length+' thiết bị còn trong tồn hiện tại.</div></div>'+
+    '<div class="rounded-xl border border-slate-200 p-4"><div class="font-semibold text-sm mb-3">Cơ cấu tồn kho hiện tại</div>'+
+    [['Phone',phone],['IoT',iot],['Accessories',access],['Demo',demo]].map(x=>'<div class="flex justify-between py-2 border-b border-slate-100 text-xs"><span>'+x[0]+'</span><b>'+mgFmt(x[1])+'</b></div>').join('')+
+    '<p class="text-[11px] text-slate-500 mt-3">Dữ liệu tồn hiện tại chỉ tính cột “Tồn hiện tại” lớn hơn 0; không cộng “Tồn đầu”, “Nhập trong kỳ” hoặc “Đang luân chuyển”.</p></div></div>'+
+    '<div class="mt-4 rounded-xl border border-slate-200 overflow-hidden"><div class="p-4 border-b border-slate-100"><div class="font-semibold text-sm">Danh sách cần ưu tiên xử lý</div><p class="text-[11px] text-slate-500 mt-1">Xếp theo số ngày lưu kho cao nhất; doanh số chỉ ghép khi tên model khớp chính xác trong Center SO và theo bộ lọc hiện tại.</p></div>'+
+    '<div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50 text-slate-600"><tr><th class="p-2">Sản phẩm</th><th class="p-2 text-right">Tồn &gt;60 ngày</th><th class="p-2 text-right">Ngày tồn cao nhất</th><th class="p-2 text-right">SL bán theo bộ lọc</th><th class="p-2">Hành động gợi ý</th></tr></thead><tbody>'+
+    products.slice(0,15).map(p=>'<tr class="border-t border-slate-100"><td class="p-2 font-medium">'+mgEsc(p.name)+'</td><td class="p-2 text-right">'+p.qty+'</td><td class="p-2 text-right font-semibold '+(p.max>=180?'text-rose-600':'text-amber-600')+'">'+p.max+'</td><td class="p-2 text-right">'+(p.sold===null?'<span class="text-slate-400">Chưa khớp tên</span>':mgFmt(p.sold))+'</td><td class="p-2">'+(p.max>=180?'Ưu tiên tư vấn / kích cầu':p.qty>=3?'Đẩy bán kèm / giao chỉ tiêu':'Theo dõi và tư vấn chủ động')+'</td></tr>').join('')+
+    '</tbody></table></div></div>'+
+    '<div class="text-[11px] text-slate-400 mt-2">Nguồn: hai file tồn kho trên GitHub. Tồn lâu là danh sách IMEI >60 ngày, đã xác nhận '+matchedImeis+'/'+aged.length+' IMEI trùng tồn hiện tại. Không suy diễn giá trị vốn vì file chưa có giá vốn.</div>';
+}
+
 const mgFmt=n=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1}).format(Number(n)||0);
 const mgMoney=n=>new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0}).format(Number(n)||0);
 const mgPct=n=>(Number(n||0)*100).toFixed(1)+'%';
@@ -76,7 +136,7 @@ function mgRenderOverviewInsights(){
   const labels={high:'Cần ưu tiên',warn:'Cần theo dõi',good:'Tích cực',info:'Gợi ý quản lý'};
   root.innerHTML=items.map(x=>'<article class="rounded-xl border p-4 '+styles[x.level]+'"><div class="flex items-center justify-between gap-2"><h4 class="font-bold text-sm text-slate-900">'+esc(x.title)+'</h4><span class="shrink-0 text-[10px] font-bold uppercase">'+labels[x.level]+'</span></div><p class="text-xs text-slate-700 mt-2">'+esc(x.body)+'</p><p class="text-xs font-semibold text-slate-800 mt-2">Đề xuất: '+esc(x.action)+'</p></article>').join('');
 }
-function mgRenderAll(){if(!currentData)return;mgApplyTargets();mgPopulateStaff();mgRenderProducts();mgRenderStaff();mgRenderService();mgRenderAlerts();mgRenderOverviewInsights();mgTargetEditor();}
+function mgRenderAll(){if(!currentData)return;mgApplyTargets();mgPopulateStaff();mgRenderProducts();mgRenderStaff();mgRenderService();mgRenderAlerts();mgRenderOverviewInsights();mgRenderInventory();mgTargetEditor();}
 function mgWithFilteredRecords(fn){const c=currentData.centerRecords,g=currentData.gcsmRecords;try{currentData.centerRecords=mgFiltered('CENTER');currentData.gcsmRecords=mgFiltered('GCSM');fn();}finally{currentData.centerRecords=c;currentData.gcsmRecords=g;}}
 function mgRefreshFilteredViews(){if(typeof window.renderCharts==='function')window.renderCharts();if(typeof window.renderTopProducts==='function')window.renderTopProducts();if(typeof window.renderTransactionsTable==='function')window.renderTransactionsTable();}
 function mgDate(v){if(v instanceof Date){const d=new Date(v.getTime()-v.getTimezoneOffset()*60000);return d.toISOString().slice(0,16).replace('T',' ');}return String(v||'').slice(0,19);}
