@@ -12,6 +12,16 @@ const DEFAULT_DATA = {
     { category: "Sạc dự phòng", target: 6, actual: 10 },
     { category: "WATCH", target: 8, actual: 0 }
   ],
+  // Bảng báo cáo KPI / KPI报表 trên sheet Tổng hợp
+  kpiReportRows: [
+    { item: "Tổng điểm bán hàng Brandshop (PHONE, IoT, Care, MDCL)", target: 176, actual: 211, score: 211, pct: 119.9, note: "Vượt chỉ tiêu" },
+    { item: "Năng suất kỹ thuật viên (Tổng khối lượng quy đổi KTV)", target: 250, actual: 317, score: 317, pct: 126.8, note: "Đạt vượt mức" },
+    { item: "TAT 1H (Sửa chữa nhanh trong 1 giờ)", target: 95.0, actual: 99.44, score: 99.44, pct: 104.7, note: "Đạt chuẩn" },
+    { item: "TAT-KS 1H (Kiểm tra/Dịch vụ nhanh 1 giờ)", target: 95.0, actual: 100.0, score: 100.0, pct: 105.3, note: "Đạt chuẩn" },
+    { item: "Chỉ số hài lòng khách hàng NPS", target: 15.0, actual: 17.86, score: 17.86, pct: 119.1, note: "Vượt chuẩn" },
+    { item: "Tỷ lệ hủy phiếu dịch vụ (Cancel Rate)", target: 6.0, actual: 4.26, score: 4.26, pct: 71.0, note: "Kiểm soát tốt" }
+  ],
+  // TAT tập trung vào các chỉ số ở mục ĐÁNH GIÁ KPI SERVICE 2025
   service: {
     volumeTotal: 446,
     afterSale: 190,
@@ -21,24 +31,24 @@ const DEFAULT_DATA = {
     cancelCount: 19,
     cancelRate: 4.26,
     tat1hRate: 99.44,
+    tatKs1hRate: 100.0,
+    tat24hRate: 100.0,
+    tat72hRate: 100.0,
     npsRate: 17.86,
     klCount: 150,
     dlCount: 100,
     filmTotal: 161,
     filmRate: 36.1
   },
-  // 2 kỹ thuật viên chính từ sheet KPI-KT & Tổng hợp
   technicians: [
     { name: "PHAN CHÍ TRUNG", code: "D70979015", repairNormal: 183, addonNormal: 45.5, soNormal: 70, soFindN: 4, newVol: 302.5, tat1h: "98.63%" },
     { name: "ĐOÀN MINH HÙNG", code: "D24248811", repairNormal: 6, addonNormal: 1.5, soNormal: 7, soFindN: 0, newVol: 14.5, tat1h: "100%" }
   ],
-  // Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (tổng hợp từ 2 sheet GCSM SO và Center SO)
   staffContributions: [
     { name: "ĐOÀN MINH HÙNG", sources: ["Center SO", "GCSM SO"], orderCount: 14, devicePts: 63, accPts: 22, carePts: 12, revenue: 132649000 },
     { name: "PHAN CHÍ TRUNG", sources: ["GCSM SO"], orderCount: 25, devicePts: 0, accPts: 2, carePts: 56, revenue: 16480000 },
     { name: "HUỲNH HỒNG HUỆ", sources: ["Center SO", "GCSM SO"], orderCount: 12, devicePts: 38, accPts: 8, carePts: 4, revenue: 65828200 }
   ],
-  // Chi tiết doanh số theo sản phẩm (tổng hợp từ 2 sheet GCSM SO và Center SO)
   productDetails: [
     { sku: "CPH2859", name: "OPPO Reno16 F 5G 8GB+256GB", category: "PHONE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 6, points: 30, revenue: 78090000 },
     { sku: "CPH-R15P", name: "OPPO Reno15 Pro 5G 12GB+256GB", category: "PHONE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 2, points: 16, revenue: 28280000 },
@@ -53,7 +63,6 @@ const DEFAULT_DATA = {
     { sku: "MDCL-GCSM", name: "Miếng dán cường lực / Film bảo vệ (GCSM & Center)", category: "MDCL", source: "GCSM SO", staff: "PHAN CHÍ TRUNG", qty: 54, points: 54, revenue: 6930000 },
     { sku: "SDP-VOOC", name: "Sạc dự phòng SDP AS-182-45 / FP-110 / JB-200", category: "Sạc dự phòng", source: "GCSM SO", staff: "HUỲNH HỒNG HUỆ", qty: 5, points: 10, revenue: 3116800 }
   ],
-  // Chi tiết đơn hàng & phiếu giao dịch (Sale Orders / Service Tickets từ GCSM SO & Center SO)
   orderDetails: [
     { id: "72026112510183295711", source: "Center SO", time: "25/11/2026 10:18", type: "Sale Order (Xuất bán)", product: "Reno15 Pro 5G 12GB+256GB (+ Enco Buds3)", staff: "ĐOÀN MINH HÙNG", points: 10, amount: 13890000, status: "Hoàn thành" },
     { id: "72026112315435141171", source: "Center SO", time: "23/11/2026 15:43", type: "Sale Order (Xuất bán)", product: "A6 Pro 5G 8GB+256GB (+ Enco Buds3)", staff: "HUỲNH HỒNG HUỆ", points: 5, amount: 8690000, status: "Hoàn thành" },
@@ -68,7 +77,7 @@ const DEFAULT_DATA = {
   ]
 };
 
-const STORAGE_KEY = "oppo_tg_dashboard_state_v4";
+const STORAGE_KEY = "oppo_tg_dashboard_state_v5";
 let appState = loadState();
 let salesChartInstance = null;
 let serviceMixChartInstance = null;
@@ -86,7 +95,6 @@ function loadState() {
   return structuredClone(DEFAULT_DATA);
 }
 
-// Lưu trạng thái lần cuối cùng (dữ liệu upload mới hoặc Target chỉnh sửa cuối cùng)
 function saveState(customActionLabel = null) {
   const now = new Date();
   const timeStr = `${now.toLocaleTimeString("vi-VN")} - ${now.toLocaleDateString("vi-VN")}`;
@@ -104,7 +112,6 @@ function formatVND(val) {
   return Number(val || 0).toLocaleString("vi-VN") + " đ";
 }
 
-// Chuẩn hóa tên nhân viên sạch sẽ, giữ đúng tên đầy đủ viết hoa
 function normalizeStaffName(raw) {
   if (!raw) return "CHƯA GÁN NHÂN VIÊN";
   const cleaned = String(raw)
@@ -130,16 +137,21 @@ function renderDashboard() {
   document.getElementById("barTotalScore").style.width = `${Math.min(pctTotal, 100)}%`;
   document.getElementById("diffTotalScore").textContent = diffTotal >= 0 ? `+${diffTotal}` : diffTotal;
 
+  // TAT tập trung các chỉ số ở mục ĐÁNH GIÁ KPI SERVICE 2025
   const s = appState.service;
+  document.getElementById("tat1hMain").textContent = `${Number(s.tat1hRate || 0).toFixed(2)}%`;
+  document.getElementById("tatKs1h").textContent = `${Number(s.tatKs1hRate ?? 100).toFixed(2)}%`;
+  document.getElementById("tat24h").textContent = `${Number(s.tat24hRate ?? 100).toFixed(2)}%`;
+  document.getElementById("tat72h").textContent = `${Number(s.tat72hRate ?? 100).toFixed(2)}%`;
   document.getElementById("valTotalTickets").textContent = s.volumeTotal;
   document.getElementById("lblChartTickets").textContent = s.volumeTotal;
-  document.getElementById("valTat1h").textContent = `${s.tat1hRate}%`;
   document.getElementById("valNps").textContent = `${s.npsRate}%`;
   document.getElementById("valCancelRate").textContent = `${s.cancelRate}%`;
   document.getElementById("valKL").textContent = `${s.klCount} (${((s.klCount / (s.klCount + s.dlCount || 1)) * 100).toFixed(0)}%)`;
   document.getElementById("valDL").textContent = `${s.dlCount} (${((s.dlCount / (s.klCount + s.dlCount || 1)) * 100).toFixed(0)}%)`;
   document.getElementById("valFilm").textContent = `${s.filmTotal} phiếu (${s.filmRate}%)`;
 
+  renderKpiReportTable();
   renderSalesTable();
   renderTechTable();
   renderStaffContributionTable();
@@ -147,6 +159,32 @@ function renderDashboard() {
   renderProductDetailTable();
   renderOrderDetailTable();
   renderCharts();
+}
+
+// Bảng báo cáo KPI / KPI报表 trên sheet Tổng hợp
+function renderKpiReportTable() {
+  const tbody = document.querySelector("#kpiReportTable tbody");
+  tbody.innerHTML = "";
+
+  const rows = Array.isArray(appState.kpiReportRows) ? appState.kpiReportRows : [];
+  rows.forEach(r => {
+    const pctNum = Number(r.pct || 0);
+    let badgeHtml = `<span class="badge">${r.note || "Đạt"}</span>`;
+    if (pctNum < 80 && !String(r.item || "").toLowerCase().includes("hủy")) {
+      badgeHtml = `<span class="badge badge-warn">${r.note || "Cần đẩy mạnh"}</span>`;
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${r.item}</strong></td>
+      <td class="num">${r.target}</td>
+      <td class="num"><strong>${r.actual}</strong></td>
+      <td class="num"><strong style="color:var(--oppo-green)">${r.score}</strong></td>
+      <td class="num">${pctNum.toFixed(1)}%</td>
+      <td>${badgeHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderSalesTable() {
@@ -169,7 +207,7 @@ function renderSalesTable() {
       <td><strong>${item.category}</strong></td>
       <td class="num">${item.target}</td>
       <td class="num"><strong>${item.actual}</strong></td>
-      <td class="num" style="color:${diff >= 0 ? '#10b981' : '#ef4444'}">${diff >= 0 ? '+' + diff : diff}</td>
+      <td class="num" style="color:${diff >= 0 ? 'var(--oppo-green)' : 'var(--danger)'}">${diff >= 0 ? '+' + diff : diff}</td>
       <td class="num">${pct.toFixed(1)}%</td>
       <td>${statusHtml}</td>
     `;
@@ -179,7 +217,6 @@ function renderSalesTable() {
   document.getElementById("salesSummaryText").textContent = `${achievedCount}/${appState.sales.length} nhóm đạt & vượt Target`;
 }
 
-// Tập trung 2 KTV chính
 function renderTechTable() {
   const tbody = document.querySelector("#techTable tbody");
   tbody.innerHTML = "";
@@ -191,14 +228,13 @@ function renderTechTable() {
       <td class="num">${t.repairNormal}</td>
       <td class="num">${t.addonNormal}</td>
       <td class="num">${t.soNormal + t.soFindN}</td>
-      <td class="num"><strong style="color:#10b981">${t.newVol}</strong></td>
+      <td class="num"><strong style="color:var(--oppo-green)">${t.newVol}</strong></td>
       <td class="num">${t.tat1h}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (từ GCSM SO + Center SO)
 function renderStaffContributionTable() {
   const tbody = document.querySelector("#staffContributionTable tbody");
   tbody.innerHTML = "";
@@ -224,7 +260,7 @@ function renderStaffContributionTable() {
       <td class="num">${Number(st.devicePts || 0).toFixed(1)}</td>
       <td class="num">${Number(st.accPts || 0).toFixed(1)}</td>
       <td class="num">${Number(st.carePts || 0).toFixed(1)}</td>
-      <td class="num"><strong style="color:#10b981;font-size:0.95rem">${st.totalPts.toFixed(1)}</strong></td>
+      <td class="num"><strong style="color:var(--oppo-green);font-size:0.95rem">${st.totalPts.toFixed(1)}</strong></td>
       <td class="num"><strong>${formatVND(st.revenue)}</strong></td>
       <td class="num">
         <div class="contrib-bar-wrap">
@@ -237,7 +273,6 @@ function renderStaffContributionTable() {
   });
 }
 
-// Chi tiết doanh số theo sản phẩm (GCSM SO + Center SO)
 function populateProductFilters() {
   const catSelect = document.getElementById("filterProductCat");
   const staffSelect = document.getElementById("filterProductStaff");
@@ -286,24 +321,23 @@ function renderProductDetailTable() {
       <td>${p.source}</td>
       <td><strong>${p.staff}</strong></td>
       <td class="num">${p.qty}</td>
-      <td class="num"><strong style="color:#10b981">${pts.toFixed(1)}</strong></td>
+      <td class="num"><strong style="color:var(--oppo-green)">${pts.toFixed(1)}</strong></td>
       <td class="num">${formatVND(p.revenue)}</td>
     `;
     tbody.appendChild(tr);
   });
 
   const tfoot = document.createElement("tr");
-  tfoot.style.background = "rgba(15, 23, 42, 0.65)";
+  tfoot.style.background = "#eef2f6";
   tfoot.innerHTML = `
     <td colspan="5"><strong>TỔNG CỘNG (${filtered.length} dòng sản phẩm)</strong></td>
     <td class="num"><strong>${sumQty}</strong></td>
-    <td class="num"><strong style="color:#10b981">${sumPts.toFixed(1)}</strong></td>
+    <td class="num"><strong style="color:var(--oppo-green)">${sumPts.toFixed(1)}</strong></td>
     <td class="num"><strong>${formatVND(sumRev)}</strong></td>
   `;
   tbody.appendChild(tfoot);
 }
 
-// Chi tiết đơn hàng & phiếu giao dịch (GCSM SO + Center SO)
 function renderOrderDetailTable() {
   const tbody = document.querySelector("#orderDetailTable tbody");
   const keyword = document.getElementById("searchOrderInput").value.trim().toLowerCase();
@@ -336,7 +370,7 @@ function renderOrderDetailTable() {
       <td>${o.type}</td>
       <td><strong>${o.product}</strong></td>
       <td><strong>${o.staff}</strong></td>
-      <td class="num"><strong style="color:#10b981">${Number(o.points || 0).toFixed(1)}</strong></td>
+      <td class="num"><strong style="color:var(--oppo-green)">${Number(o.points || 0).toFixed(1)}</strong></td>
       <td class="num">${formatVND(o.amount)}</td>
       <td><span class="${badgeCls}">${o.status}</span></td>
     `;
@@ -363,16 +397,16 @@ function renderCharts() {
         {
           label: "Target (Điểm)",
           data: appState.sales.map(x => x.target),
-          backgroundColor: "rgba(148, 163, 184, 0.35)",
-          borderColor: "#94a3b8",
+          backgroundColor: "#cbd5e1",
+          borderColor: "#64748b",
           borderWidth: 1,
           borderRadius: 6
         },
         {
           label: "Thực đạt (Điểm)",
           data: appState.sales.map(x => x.actual),
-          backgroundColor: "#009b72",
-          borderColor: "#10b981",
+          backgroundColor: "#059669",
+          borderColor: "#047857",
           borderWidth: 1,
           borderRadius: 6
         }
@@ -381,10 +415,10 @@ function renderCharts() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: "#f8fafc" } } },
+      plugins: { legend: { labels: { color: "#0f172a" } } },
       scales: {
-        x: { ticks: { color: "#94a3b8" }, grid: { display: false } },
-        y: { ticks: { color: "#94a3b8" }, grid: { color: "#334155" } }
+        x: { ticks: { color: "#334155" }, grid: { display: false } },
+        y: { ticks: { color: "#334155" }, grid: { color: "#e2e8f0" } }
       }
     }
   });
@@ -399,21 +433,20 @@ function renderCharts() {
       labels: ["After Sale (Sửa chữa)", "Sale Order (Bán PK)", "Customer Rel (CSKH/Dán)", "Simple Service"],
       datasets: [{
         data: [s.afterSale, s.saleOrder, s.customerRel, s.simpleService],
-        backgroundColor: ["#10b981", "#38bdf8", "#f59e0b", "#a855f7"],
-        borderWidth: 0
+        backgroundColor: ["#059669", "#0284c7", "#d97706", "#7c3aed"],
+        borderWidth: 2,
+        borderColor: "#ffffff"
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: "bottom", labels: { color: "#f8fafc", boxWidth: 12 } } }
+      plugins: { legend: { position: "bottom", labels: { color: "#0f172a", boxWidth: 12 } } }
     }
   });
 }
 
-// Bóc tách dữ liệu từ file Excel T11:
-// - Tổng hợp, KPI-SC, KPI-KT cho KPI tổng quan & 2 KTV
-// - Tập trung 2 sheet GCSM SO và Center SO cho Nhân sự, Sản phẩm và Đơn hàng/Phiếu giao dịch
+// Bóc tách dữ liệu Excel theo cấu trúc file 2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx
 document.getElementById("excelUpload").addEventListener("change", function (e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -445,6 +478,41 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
             target: Number(rows[2][c.tCol]) || 0,
             actual: Number(rows[2][c.aCol]) || 0
           }));
+        }
+
+        // Bóc tách bảng báo cáo KPI / KPI报表 trên sheet Tổng hợp
+        const extractedKpiReport = [];
+        for (let r = 0; r < rows.length; r++) {
+          const row = rows[r];
+          if (!row) continue;
+          const rowText = row.map(x => String(x || "")).join(" ");
+          if (rowText.includes("KPI报表") || rowText.includes("Báo cáo KPI") || rowText.includes("KPI")) {
+            // Tìm các dòng số liệu kế tiếp có tên hạng mục + số liệu
+            for (let k = r + 1; k < Math.min(rows.length, r + 20); k++) {
+              const kr = rows[k];
+              if (!kr) continue;
+              const label = String(kr[0] || kr[1] || kr[2] || "").trim();
+              const nums = kr.filter(v => typeof v === "number" && !isNaN(v));
+              if (label && label.length > 2 && !label.includes("KPI报表") && nums.length >= 2) {
+                const tgt = nums[0];
+                const act = nums[1];
+                const sc = nums[2] !== undefined ? nums[2] : act;
+                const pct = tgt > 0 ? Number(((act / tgt) * 100).toFixed(1)) : 100;
+                extractedKpiReport.push({
+                  item: label,
+                  target: tgt,
+                  actual: act,
+                  score: sc,
+                  pct,
+                  note: pct >= 100 ? "Đạt / Vượt" : "Theo dõi"
+                });
+              }
+            }
+            if (extractedKpiReport.length > 0) break;
+          }
+        }
+        if (extractedKpiReport.length > 0) {
+          appState.kpiReportRows = extractedKpiReport;
         }
 
         const techs = [];
@@ -480,10 +548,12 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         }
       }
 
-      if (workbook.Sheets["KPI-SC"]) {
-        const kpiRows = XLSX.utils.sheet_to_json(workbook.Sheets["KPI-SC"], { header: 1 });
-        const d = kpiRows[3];
-        if (d) {
+      // Sheet tổng thể / KPI-SC: tập trung ĐÁNH GIÁ KPI SERVICE 2025 cho TAT
+      const totalSheet = workbook.Sheets["KPI-SC"] || workbook.Sheets["Tổng thể"];
+      if (totalSheet) {
+        const kpiRows = XLSX.utils.sheet_to_json(totalSheet, { header: 1 });
+        const d = kpiRows[3] || kpiRows[2] || [];
+        if (d.length > 0) {
           appState.scCode = d[1] || appState.scCode;
           appState.service.volumeTotal = Number(d[9]) || appState.service.volumeTotal;
           appState.service.cancelCount = Number(d[19]) || appState.service.cancelCount;
@@ -494,7 +564,10 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
           appState.service.customerRel = Number(d[32]) || appState.service.customerRel;
           appState.service.saleOrder = Number(d[33]) || appState.service.saleOrder;
           appState.service.simpleService = Number(d[34]) || appState.service.simpleService;
-          appState.service.tat1hRate = Number(((Number(d[60]) || 0) * 100).toFixed(2));
+          appState.service.tat1hRate = Number(((Number(d[60]) || 0.9944) * 100).toFixed(2));
+          appState.service.tatKs1hRate = Number(((Number(d[61]) || 1) * 100).toFixed(2));
+          appState.service.tat24hRate = Number(((Number(d[62]) || 1) * 100).toFixed(2));
+          appState.service.tat72hRate = Number(((Number(d[63]) || 1) * 100).toFixed(2));
           appState.service.npsRate = Number(((Number(d[74]) || 0) * 100).toFixed(2));
         }
       }
@@ -549,7 +622,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         item.revenue += Number(rev || 0);
       };
 
-      // Sheet 1: Center SO
       if (workbook.Sheets["Center SO"]) {
         const cRows = XLSX.utils.sheet_to_json(workbook.Sheets["Center SO"], { header: 1 });
         for (let r = 3; r < cRows.length; r++) {
@@ -591,7 +663,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         }
       }
 
-      // Sheet 2: GCSM SO
       if (workbook.Sheets["GCSM SO"]) {
         const gRows = XLSX.utils.sheet_to_json(workbook.Sheets["GCSM SO"], { header: 1 });
         for (let r = 1; r < gRows.length; r++) {
@@ -657,7 +728,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
   reader.readAsArrayBuffer(file);
 });
 
-// Modal Chỉnh sửa Target: lưu dữ liệu lần chỉnh cuối cùng
 const targetModal = document.getElementById("targetModal");
 document.getElementById("btnEditTarget").addEventListener("click", () => {
   const grid = document.getElementById("targetInputsGrid");
@@ -695,7 +765,6 @@ document.getElementById("btnResetDefault").addEventListener("click", () => {
   }
 });
 
-// Modal Export Báo Cáo
 const reportModal = document.getElementById("reportModal");
 document.getElementById("btnExportReport").addEventListener("click", () => {
   const totalTarget = appState.sales.reduce((s, i) => s + i.target, 0);
@@ -728,12 +797,14 @@ Mã trạm: ${appState.scCode} | Cập nhật: ${appState.lastUpdated}
 - Tổng điểm: ${totalActual} / ${totalTarget} điểm (Đạt ${pct}%)
 ${salesLines}
 
-2. ĐÓNG GÓP DOANH SỐ & ĐIỂM BÁN HÀNG THEO NHÂN SỰ (GCSM SO + CENTER SO):
+2. ĐÁNH GIÁ KPI SERVICE 2025 (TAT):
+- TAT 1H: ${s.tat1hRate}% | TAT-KS 1H: ${s.tatKs1hRate}% | TAT 24H: ${s.tat24hRate}% | TAT 72H: ${s.tat72hRate}%
+- Tổng phiếu: ${s.volumeTotal} phiếu | NPS: ${s.npsRate}% | Tỷ lệ hủy: ${s.cancelRate}%
+
+3. ĐÓNG GÓP DOANH SỐ & ĐIỂM BÁN HÀNG THEO NHÂN SỰ (GCSM SO + CENTER SO):
 ${staffLines}
 
-3. CHỈ SỐ DỊCH VỤ & NĂNG SUẤT 2 KỸ THUẬT VIÊN:
-- Tổng phiếu tiếp nhận: ${s.volumeTotal} phiếu | TAT 1H: ${s.tat1hRate}% | NPS: ${s.npsRate}%
-- Tỷ lệ Khách lẻ / Đại lý: ${s.klCount} KL / ${s.dlCount} ĐL | Dán MH: ${s.filmTotal} phiếu
+4. NĂNG SUẤT 2 KỸ THUẬT VIÊN:
 ${techLines}
 --------------------------------------------------`;
 
