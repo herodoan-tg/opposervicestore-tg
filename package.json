@@ -1,0 +1,7 @@
+{
+  "name": "oppo-store-kpi-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Web Dashboard theo dõi chỉ số vận hành OPPO Experience & Service Store với tính năng upload dữ liệu thời gian thực"
+}
