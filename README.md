@@ -1,14 +1,11 @@
-# OPPO Store Operations Dashboard v2 (VN001034)
+# OPPO Experience & Service Store - KPI Dashboard
 
-Dashboard theo dõi chỉ số bán hàng (Brandshop), hiệu suất nhân sự & dịch vụ sau bán hàng (Service Center) trên nền web tĩnh.
+Dashboard theo dõi trực quan các chỉ số KPI hoạt động của cửa hàng từ file Excel (`2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx`).
 
-## Cập nhật ở phiên bản v2
-1. **Tinh gọn thẻ KPI tổng quan**: Loại bỏ 2 mục *Service Volume (Mới)* và *Chẩn đoán sau sửa chữa*, tập trung vào **Tổng điểm doanh số** và **KPI TAT 1H**.
-2. **Bảng Chi Tiết Đơn Hàng**: Tra cứu mã phiếu, thời gian, loại giao dịch, sản phẩm, nhân viên phụ trách kèm bộ lọc theo từ khóa và trạng thái đơn hàng.
-3. **Bảng Chi Tiết Doanh Số Sản Phẩm**: Thống kê sản lượng bán, hệ số quy đổi điểm và doanh thu ước tính từng SKU/nhóm hàng, hỗ trợ lọc theo nhóm sản phẩm.
-4. **Năng suất Kỹ Thuật Viên (2 KTV)**: Tập trung theo dõi hiệu suất và chất lượng TAT 1H của 2 nhân sự kỹ thuật chính tại trạm.
-5. **Bảng Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự**: Theo dõi tỷ trọng đóng góp điểm máy, phụ kiện, Oppo Care/MDCL và mức đạt KPI của từng nhân sự bán hàng.
-
-## Cách đưa lên GitHub Pages
-1. Upload toàn bộ 4 file (`index.html`, `style.css`, `app.js`, `README.md`) lên thư mục gốc của Repository trên GitHub.
-2. Vào **Settings** → **Pages** → Chọn nhánh `main` (`/root`) → Bấm **Save**.
+## Tính năng chính
+1. **Upload & Tự động lưu trữ dữ liệu gần nhất**: Dữ liệu sau khi tải lên được lưu trong `localStorage` của trình duyệt, mở lại trang không cần upload lại.
+2. **Tổng Quan & Bảng Báo Cáo KPI / KPI报表**: Đọc trực tiếp từ sheet `Tổng Hợp`, kèm biểu đồ trực quan.
+3. **Đóng Góp Nhân Sự & Chi Tiết Sản Phẩm**: Tổng hợp tập trung từ 2 sheet `GCSM SO` và `Center SO`, chuẩn hóa đúng tên nhân viên.
+4. **Chi Tiết Đơn Hàng & Phiếu Giao Dịch**: Tra cứu, lọc nhanh theo sheet (`GCSM SO` / `Center SO`), tên nhân viên và từ khóa sản phẩm/mã đơn.
+5. **TAT - Đánh Giá KPI Service 2025**: Tập trung các chỉ số Service & TAT từ sheet `Tổng Thể`.
+6. **Chỉnh Sửa & Lưu Target**: Cho phép điều chỉnh Target trực tiếp trên web và lưu cố định lần chỉnh cuối cùng.
