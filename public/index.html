@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPPO Experience & Service Store - Dashboard Điều Hành & KPI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; color: #1e293b; }
+    .oppo-gradient { background: linear-gradient(135deg, #046a38 0%, #059669 100%); }
+    .card { background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03); }
+    .tab-active { border-bottom: 3px solid #059669; color: #046a38; font-weight: 700; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #ffffff !important; }
+      .card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Header -->
+  <header class="oppo-gradient text-white shadow-md no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">LIVE DASHBOARD</span>
+          <span id="syncBadge" class="bg-emerald-950/40 text-emerald-100 text-xs px-2.5 py-1 rounded-full">Đang đồng bộ...</span>
+        </div>
+        <h1 id="storeName" class="text-xl sm:text-2xl font-extrabold mt-1.5 tracking-tight">OPPO Experience & Service Store Tiền Giang</h1>
+        <p id="storeMeta" class="text-xs sm:text-sm text-emerald-100 mt-0.5">Kỳ báo cáo: Tháng 11/2026 • Cập nhật: --</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button onclick="openUploadModal()" class="bg-white text-emerald-800 hover:bg-emerald-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Upload Dữ Liệu Mới
+        </button>
+        <button onclick="openReportModal()" class="bg-emerald-900/70 hover:bg-emerald-900 text-white border border-emerald-400/30 font-semibold text-sm px-4 py-2.5 rounded-xl flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export Báo Cáo Nhanh
+        </button>
+        <a href="/data/OPPO_Store_KPI_Data.xlsx" download class="bg-emerald-800/60 hover:bg-emerald-800 text-emerald-50 text-xs font-medium px-3 py-2.5 rounded-xl border border-white/15 transition">
+          Tải File Excel Mẫu
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-20 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-6 overflow-x-auto text-sm font-medium text-slate-600">
+      <button onclick="switchTab('overview')" id="tab-overview" class="py-3.5 whitespace-nowrap tab-active">1. Tổng Quan Chỉ Số Shop</button>
+      <button onclick="switchTab('staff')" id="tab-staff" class="py-3.5 whitespace-nowrap hover:text-emerald-700">2. Phân Tích Từng Nhân Viên</button>
+      <button onclick="switchTab('details')" id="tab-details" class="py-3.5 whitespace-nowrap hover:text-emerald-700">3. Chi Tiết Đơn Hàng (GCSM & Center SO)</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 space-y-6">
+
+    <!-- Top KPI Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tổng Doanh Thu</span>
+          <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg font-bold text-xs">VND</span>
+        </div>
+        <div id="kpiRevenue" class="text-2xl font-extrabold text-slate-800 mt-2">0 ₫</div>
+        <p id="kpiRevenueSub" class="text-xs text-emerald-600 font-medium mt-1">-- đơn xuất bán</p>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tổng Điểm KPI Đạt</span>
+          <span id="kpiPointsBadge" class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">0%</span>
+        </div>
+        <div id="kpiPoints" class="text-2xl font-extrabold text-slate-800 mt-2">0 / 0 đ</div>
+        <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5">
+          <div id="kpiPointsBar" class="bg-emerald-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tốc Độ Xử Lý TAT</span>
+          <span id="kpiTatSla" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md font-bold text-xs">0% &lt; 1h</span>
+        </div>
+        <div id="kpiTat" class="text-2xl font-extrabold text-slate-800 mt-2">0 phút</div>
+        <p id="kpiTatSub" class="text-xs text-slate-500 mt-1">-- đơn dịch vụ GCSM</p>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Chỉ Số Hài Lòng NPS</span>
+          <span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md font-bold text-xs">Mục tiêu ≥ 90%</span>
+        </div>
+        <div id="kpiNps" class="text-2xl font-extrabold text-slate-800 mt-2">0%</div>
+        <p id="kpiNpsSub" class="text-xs text-slate-500 mt-1">Promoters: --% | Detractors: --%</p>
+      </div>
+    </section>
+
+    <!-- TAB 1: OVERVIEW -->
+    <div id="view-overview" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Category KPI Chart -->
+        <div class="card p-5 lg:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-800">Tiến Độ KPI Theo Nhóm Sản Phẩm</h2>
+              <p class="text-xs text-slate-500">So sánh Điểm Thực Đạt vs Điểm Mục Tiêu từng ngành hàng</p>
+            </div>
+          </div>
+          <div class="h-72">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Customer Segment Doughnut -->
+        <div class="card p-5 flex flex-col justify-between">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Tỷ Trọng Khách Lẻ / Đại Lý</h2>
+            <p class="text-xs text-slate-500">Phân bổ doanh thu theo kênh bán hàng</p>
+          </div>
+          <div class="h-52 my-2">
+            <canvas id="segmentChart"></canvas>
+          </div>
+          <div id="segmentLegend" class="space-y-2 text-xs border-t pt-3"></div>
+        </div>
+      </div>
+
+      <!-- Category Table & Weekly Trend -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-5">
+          <h2 class="text-base font-bold text-slate-800 mb-3">Bảng Tổng Hợp Ngành Hàng</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                <tr>
+                  <th class="py-2.5 px-3 rounded-l-lg">Nhóm SP</th>
+                  <th class="py-2.5 px-3 text-right">SL (Đạt/MT)</th>
+                  <th class="py-2.5 px-3 text-right">Điểm KPI</th>
+                  <th class="py-2.5 px-3 text-right">Hoàn thành</th>
+                  <th class="py-2.5 px-3 text-right rounded-r-lg">Doanh thu</th>
+                </tr>
+              </thead>
+              <tbody id="categoryTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card p-5">
+          <h2 class="text-base font-bold text-slate-800 mb-1">Xu Hướng Doanh Thu & Điểm Theo Tuần</h2>
+          <p class="text-xs text-slate-500 mb-3">Biến động hiệu suất vận hành trong kỳ</p>
+          <div class="h-64">
+            <canvas id="weeklyChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: STAFF ANALYTICS -->
+    <div id="view-staff" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="card p-5 lg:col-span-2">
+          <h2 class="text-base font-bold text-slate-800">Biểu Đồ So Sánh Hiệu Suất Nhân Viên</h2>
+          <p class="text-xs text-slate-500 mb-4">Cơ cấu Điểm Bán Hàng + Điểm Dịch Vụ so với Chỉ Tiêu Giao</p>
+          <div class="h-72">
+            <canvas id="staffChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card p-5 bg-gradient-to-br from-emerald-50/70 to-white">
+          <h2 class="text-base font-bold text-emerald-900 flex items-center gap-2">
+            <span>Nhận Xét & Đánh Giá Tự Động</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5 mb-3">Phân tích điểm mạnh & điểm cần cải thiện từng nhân sự</p>
+          <div id="staffInsightsList" class="space-y-3 text-xs"></div>
+        </div>
+      </div>
+
+      <!-- Detailed Staff Cards -->
+      <div id="staffCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
+
+      <!-- Full Staff Comparison Table -->
+      <div class="card p-5">
+        <h2 class="text-base font-bold text-slate-800 mb-3">Bảng Chỉ Số Chi Tiết Từng Nhân Viên</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+              <tr>
+                <th class="py-2.5 px-3">Mã NV</th>
+                <th class="py-2.5 px-3">Họ & Tên</th>
+                <th class="py-2.5 px-3">Vai trò</th>
+                <th class="py-2.5 px-3 text-right">Điểm Bán</th>
+                <th class="py-2.5 px-3 text-right">Điểm DV</th>
+                <th class="py-2.5 px-3 text-right">Tổng / MT</th>
+                <th class="py-2.5 px-3 text-right">% KPI</th>
+                <th class="py-2.5 px-3 text-right">TAT TB</th>
+                <th class="py-2.5 px-3 text-right">NPS</th>
+                <th class="py-2.5 px-3 text-right">Doanh thu</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ORDER DETAILS -->
+    <div id="view-details" class="hidden space-y-6">
+      <div class="card p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-800">Danh Sách Đơn Dịch Vụ (GCSM SO)</h2>
+            <p class="text-xs text-slate-500">Theo dõi thời gian xử lý TAT, điểm dịch vụ và đánh giá NPS từng phiếu</p>
+          </div>
+          <input type="text" id="searchGcsm" onkeyup="filterTables()" placeholder="Tìm mã SO, model, nhân viên..." class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs w-full sm:w-64 focus:outline-none focus:border-emerald-500">
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-500 uppercase">
+              <tr>
+                <th class="py-2.5 px-3">Mã SO</th>
+                <th class="py-2.5 px-3">Ngày</th>
+                <th class="py-2.5 px-3">Khách hàng</th>
+                <th class="py-2.5 px-3">Model</th>
+                <th class="py-2.5 px-3">Loại dịch vụ</th>
+                <th class="py-2.5 px-3 text-right">TAT (phút)</th>
+                <th class="py-2.5 px-3 text-right">NPS</th>
+                <th class="py-2.5 px-3 text-right">Điểm</th>
+                <th class="py-2.5 px-3">Nhân viên</th>
+                <th class="py-2.5 px-3">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="gcsmTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <div class="mb-4">
+          <h2 class="text-base font-bold text-slate-800">Danh Sách Xuất Bán & Luân Chuyển (Center SO)</h2>
+          <p class="text-xs text-slate-500">Chi tiết doanh số và điểm quy đổi theo từng đơn bán hàng</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-500 uppercase">
+              <tr>
+                <th class="py-2.5 px-3">Mã SO</th>
+                <th class="py-2.5 px-3">Ngày</th>
+                <th class="py-2.5 px-3">Loại giao dịch</th>
+                <th class="py-2.5 px-3">Model</th>
+                <th class="py-2.5 px-3">Nhóm</th>
+                <th class="py-2.5 px-3 text-right">SL</th>
+                <th class="py-2.5 px-3 text-right">Doanh thu</th>
+                <th class="py-2.5 px-3 text-right">Điểm</th>
+                <th class="py-2.5 px-3">Nhân viên</th>
+              </tr>
+            </thead>
+            <tbody id="centerTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- UPLOAD MODAL -->
+  <div id="uploadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-lg font-bold text-slate-800">Upload Dữ Liệu Mới Lên Web</h3>
+        <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Chọn file Excel (<strong>.xlsx</strong> theo mẫu có các sheet <code>KPI_Summary</code>, <code>GCSM SO</code>, <code>Center SO</code>, <code>Staff_Performance</code>) hoặc file <strong>dashboard.json</strong>. Dữ liệu sau khi tải lên sẽ được cập nhật trực tiếp cho tất cả mọi người truy cập link.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Người cập nhật / Ghi chú phiên bản</label>
+          <input type="text" id="uploaderName" placeholder="VD: Minh Hùng - Cập nhật sáng 28/11" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mã PIN bảo mật (nếu hệ thống có cài UPLOAD_PIN)</label>
+          <input type="password" id="uploadPinInput" placeholder="Để trống nếu không cài PIN" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-600">
+        </div>
+
+        <label class="border-2 border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition">
+          <svg class="w-8 h-8 text-emerald-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <span id="selectedFileName" class="text-sm font-semibold text-emerald-800">Nhấn để chọn file .xlsx hoặc .json</span>
+          <span class="text-xs text-slate-500 mt-1">Tự động tính toán lại toàn bộ biểu đồ & phân tích nhân viên</span>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.json" class="hidden" onchange="handleFileSelect(event)">
+        </label>
+      </div>
+
+      <div id="uploadStatus" class="text-xs hidden p-3 rounded-xl"></div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeUploadModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl">Đóng</button>
+        <button id="btnConfirmUpload" onclick="processAndPublishUpload()" disabled class="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 rounded-xl shadow">
+          Cập Nhật & Công Khai Dữ Liệu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE REPORT EXPORT MODAL -->
+  <div id="reportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b pb-3 no-print">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Báo Cáo Tóm Tắt Điều Hành (Executive Summary)</h3>
+          <p class="text-xs text-slate-500">Tự động tổng hợp số liệu mới nhất để gửi Zalo / Email hoặc xuất file</p>
+        </div>
+        <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 space-y-4 pr-1">
+        <textarea id="reportTextArea" rows="15" class="w-full border border-slate-200 rounded-xl p-4 text-xs sm:text-sm font-mono bg-slate-50 text-slate-800 focus:outline-none leading-relaxed"></textarea>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t no-print">
+        <span id="copyFeedback" class="text-xs font-semibold text-emerald-600"></span>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="copyReportText()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-sm">
+            Copy Gửi Zalo / Nhóm
+          </button>
+          <button onclick="downloadReportTxt()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold rounded-xl">
+            Tải File Báo Cáo (.txt)
+          </button>
+          <button onclick="window.print()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold rounded-xl">
+            In / Xuất PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentData = null;
+    let parsedUploadPayload = null;
+    let charts = {};
+
+    const fmtVND = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n || 0);
+    const fmtNum = (n) => new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(n || 0);
+
+    async function loadDashboardData() {
+      try {
+        const res = await fetch('/api/data?t=' + Date.now());
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.data) {
+            currentData = json.data;
+            updateSyncBadge(json.source);
+            renderAll();
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('API fallback to static JSON:', e);
+      }
+
+      // Fallback to static file if opened locally or API unavailable
+      const staticRes = await fetch('/data/dashboard.json?t=' + Date.now());
+      currentData = await staticRes.json();
+      updateSyncBadge('static_file');
+      renderAll();
+    }
+
+    function updateSyncBadge(source) {
+      const badge = document.getElementById('syncBadge');
+      const map = {
+        'kv_realtime': 'Live Sync (Cloud KV)',
+        'github_realtime': 'Live Sync (GitHub)',
+        'memory_warm': 'Live Sync (Server)',
+        'repo_default': 'Dữ liệu chuẩn GitHub',
+        'static_file': 'Chế độ tĩnh'
+      };
+      badge.textContent = map[source] || 'Đã đồng bộ';
+    }
+
+    function switchTab(tab) {
+      ['overview', 'staff', 'details'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('tab-' + t).classList.toggle('tab-active', t === tab);
+      });
+    }
+
+    function renderAll() {
+      if (!currentData) return;
+      const { metadata, kpi_summary, service_metrics, customer_segment, staff_performance, kpi_detailed_report, gcsm_so, center_so } = currentData;
+
+      // Header
+      document.getElementById('storeName').textContent = metadata.store_name || 'OPPO Experience & Service Store';
+      const updatedTime = metadata.last_updated ? new Date(metadata.last_updated).toLocaleString('vi-VN') : '--';
+      document.getElementById('storeMeta').textContent = `${metadata.reporting_period || ''} • Cập nhật: ${updatedTime} (${metadata.uploaded_by || 'Hệ thống'})`;
+
+      // Top KPIs
+      const totalRev = kpi_summary.reduce((s, x) => s + (Number(x.revenue_vnd) || 0), 0);
+      const totalActualPts = kpi_summary.reduce((s, x) => s + (Number(x.actual_points) || 0), 0) + (Number(service_metrics.total_service_points) || 0);
+      const totalTargetPts = kpi_summary.reduce((s, x) => s + (Number(x.target_points) || 0), 0) + 25;
+      const pctPts = totalTargetPts > 0 ? Math.round((totalActualPts / totalTargetPts) * 1000) / 10 : 0;
+      const salesOrders = center_so.filter(x => x.transaction_type === 'Xuất bán').length;
+
+      document.getElementById('kpiRevenue').textContent = fmtVND(totalRev);
+      document.getElementById('kpiRevenueSub').textContent = `${salesOrders} phiếu xuất bán trong kỳ`;
+
+      document.getElementById('kpiPoints').textContent = `${fmtNum(totalActualPts)} / ${fmtNum(totalTargetPts)} đ`;
+      document.getElementById('kpiPointsBadge').textContent = `${pctPts}%`;
+      document.getElementById('kpiPointsBar').style.width = `${Math.min(pctPts, 100)}%`;
+
+      document.getElementById('kpiTat').textContent = `${fmtNum(service_metrics.avg_tat_minutes)} phút`;
+      document.getElementById('kpiTatSla').textContent = `${fmtNum(service_metrics.tat_under_1h_pct)}% < 1h`;
+      document.getElementById('kpiTatSub').textContent = `${service_metrics.completed_orders}/${service_metrics.total_service_orders} đơn dịch vụ hoàn tất`;
+
+      document.getElementById('kpiNps').textContent = `${fmtNum(service_metrics.nps_score)}%`;
+      document.getElementById('kpiNpsSub').textContent = `Promoters: ${service_metrics.promoters_pct}% | Detractors: ${service_metrics.detractors_pct}%`;
+
+      renderCharts(kpi_summary, customer_segment, kpi_detailed_report, staff_performance);
+      renderCategoryTable(kpi_summary);
+      renderStaffSection(staff_performance);
+      renderOrderTables(gcsm_so, center_so);
+    }
+
+    function renderCharts(kpiSummary, customerSegment, weeklyReport, staffPerf) {
+      Object.values(charts).forEach(c => c && c.destroy());
+
+      // 1. Category Chart
+      charts.category = new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+          labels: kpiSummary.map(x => x.category),
+          datasets: [
+            { label: 'Điểm Thực Đạt', data: kpiSummary.map(x => x.actual_points), backgroundColor: '#059669', borderRadius: 6 },
+            { label: 'Điểm Mục Tiêu', data: kpiSummary.map(x => x.target_points), backgroundColor: '#cbd5e1', borderRadius: 6 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // 2. Customer Segment Doughnut
+      charts.segment = new Chart(document.getElementById('segmentChart'), {
+        type: 'doughnut',
+        data: {
+          labels: customerSegment.map(x => x.segment),
+          datasets: [{
+            data: customerSegment.map(x => x.revenue_vnd),
+            backgroundColor: ['#059669', '#0ea5e9', '#f59e0b'],
+            borderWidth: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
+      });
+
+      document.getElementById('segmentLegend').innerHTML = customerSegment.map((s, idx) => `
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-2 font-medium text-slate-700">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:${idx === 0 ? '#059669' : '#0ea5e9'}"></span>
+            ${s.segment} (${s.share_pct}%)
+          </span>
+          <span class="font-bold text-slate-800">${fmtVND(s.revenue_vnd)}</span>
+        </div>
+      `).join('');
+
+      // 3. Weekly Chart
+      charts.weekly = new Chart(document.getElementById('weeklyChart'), {
+        type: 'line',
+        data: {
+          labels: weeklyReport.map(x => x.week),
+          datasets: [
+            { label: 'Điểm Bán Hàng', data: weeklyReport.map(x => x.sales_points), borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.1)', fill: true, tension: 0.35 },
+            { label: 'TAT TB (phút)', data: weeklyReport.map(x => x.avg_tat_min), borderColor: '#f59e0b', borderDash: [5, 5], tension: 0.35 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // 4. Staff Chart
+      charts.staff = new Chart(document.getElementById('staffChart'), {
+        type: 'bar',
+        data: {
+          labels: staffPerf.map(s => s.staff_name),
+          datasets: [
+            { label: 'Điểm Bán Hàng', data: staffPerf.map(s => s.sales_points), backgroundColor: '#059669', stack: 'actual', borderRadius: 4 },
+            { label: 'Điểm Dịch Vụ', data: staffPerf.map(s => s.service_points), backgroundColor: '#3b82f6', stack: 'actual', borderRadius: 4 },
+            { label: 'Chỉ Tiêu Giao', data: staffPerf.map(s => s.target_points), backgroundColor: '#e2e8f0', stack: 'target', borderRadius: 4 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    function renderCategoryTable(kpiSummary) {
+      document.getElementById('categoryTableBody').innerHTML = kpiSummary.map(row => {
+        const badgeColor = row.completion_pct >= 100 ? 'bg-emerald-100 text-emerald-800' : (row.completion_pct >= 85 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${row.category}</td>
+            <td class="py-2.5 px-3 text-right text-slate-600">${row.actual_qty} / ${row.target_qty}</td>
+            <td class="py-2.5 px-3 text-right font-semibold">${fmtNum(row.actual_points)} / ${fmtNum(row.target_points)}</td>
+            <td class="py-2.5 px-3 text-right"><span class="px-2 py-0.5 rounded-full text-xs font-bold ${badgeColor}">${fmtNum(row.completion_pct)}%</span></td>
+            <td class="py-2.5 px-3 text-right font-medium text-slate-800">${fmtVND(row.revenue_vnd)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderStaffSection(staffPerf) {
+      const sorted = [...staffPerf].sort((a, b) => b.kpi_pct - a.kpi_pct);
+
+      // Auto Insights
+      const topStaff = sorted[0];
+      const lowestTat = [...staffPerf].sort((a, b) => a.avg_tat_min - b.avg_tat_min)[0];
+      const needSupport = sorted[sorted.length - 1];
+
+      document.getElementById('staffInsightsList').innerHTML = `
+        <div class="p-3 bg-white rounded-xl border border-emerald-200">
+          <div class="font-bold text-emerald-800">🏆 Dẫn đầu tổng điểm KPI: ${topStaff.staff_name}</div>
+          <p class="text-slate-600 mt-1">Đạt <strong>${fmtNum(topStaff.total_points)}/${topStaff.target_points} điểm (${topStaff.kpi_pct}%)</strong>, doanh thu mang về ${fmtVND(topStaff.revenue_vnd)}.</p>
+        </div>
+        <div class="p-3 bg-white rounded-xl border border-blue-200">
+          <div class="font-bold text-blue-800">⚡ Xử lý dịch vụ nhanh nhất: ${lowestTat.staff_name}</div>
+          <p class="text-slate-600 mt-1">Thời gian TAT trung bình chỉ <strong>${lowestTat.avg_tat_min} phút</strong> với điểm hài lòng NPS đạt <strong>${lowestTat.nps_score}%</strong>.</p>
+        </div>
+        <div class="p-3 bg-white rounded-xl border border-amber-200">
+          <div class="font-bold text-amber-800">🎯 Cần đẩy mạnh cuối kỳ: ${needSupport.staff_name}</div>
+          <p class="text-slate-600 mt-1">Hiện đạt <strong>${needSupport.kpi_pct}%</strong> chỉ tiêu (còn thiếu ${fmtNum(Math.max(0, needSupport.target_points - needSupport.total_points))} điểm) và TAT TB ${needSupport.avg_tat_min} phút.</p>
+        </div>
+      `;
+
+      // Staff Cards
+      document.getElementById('staffCardsGrid').innerHTML = sorted.map((st, idx) => {
+        const statusColor = st.kpi_pct >= 100 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (st.kpi_pct >= 90 ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-amber-700 bg-amber-50 border-amber-200');
+        return `
+          <div class="card p-5 flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-xs font-bold text-slate-400">#${idx + 1} • ${st.staff_id}</span>
+                <h3 class="text-base font-extrabold text-slate-800">${st.staff_name}</h3>
+                <p class="text-xs text-slate-500">${st.role}</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg border text-xs font-extrabold ${statusColor}">${st.kpi_pct}% KPI</span>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-500">Tổng điểm đạt:</span>
+                <span class="font-bold text-slate-800">${fmtNum(st.total_points)} / ${st.target_points} đ</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full">
+                <div class="bg-emerald-600 h-2 rounded-full" style="width:${Math.min(st.kpi_pct, 100)}%"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t text-center">
+              <div class="bg-slate-50 rounded-lg p-2">
+                <div class="text-[11px] text-slate-400">Bán / DV</div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">${st.sales_points} / ${st.service_points}</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2">
+                <div class="text-[11px] text-slate-400">TAT TB</div>
+                <div class="text-xs font-bold text-slate-800 mt-0.5">${st.avg_tat_min}p</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2">
+                <div class="text-[11px] text-slate-400">NPS</div>
+                <div class="text-xs font-bold text-emerald-700 mt-0.5">${st.nps_score}%</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Staff Table
+      document.getElementById('staffTableBody').innerHTML = sorted.map(st => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-mono text-xs text-slate-500">${st.staff_id}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${st.staff_name}</td>
+          <td class="py-2.5 px-3 text-xs text-slate-500">${st.role}</td>
+          <td class="py-2.5 px-3 text-right">${fmtNum(st.sales_points)}</td>
+          <td class="py-2.5 px-3 text-right">${fmtNum(st.service_points)}</td>
+          <td class="py-2.5 px-3 text-right font-bold">${fmtNum(st.total_points)} / ${st.target_points}</td>
+          <td class="py-2.5 px-3 text-right font-bold text-emerald-700">${st.kpi_pct}%</td>
+          <td class="py-2.5 px-3 text-right">${st.avg_tat_min}p</td>
+          <td class="py-2.5 px-3 text-right">${st.nps_score}%</td>
+          <td class="py-2.5 px-3 text-right font-semibold">${fmtVND(st.revenue_vnd)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOrderTables(gcsmList, centerList) {
+      document.getElementById('gcsmTableBody').innerHTML = gcsmList.map(r => `
+        <tr class="hover:bg-slate-50 order-row">
+          <td class="py-2 px-3 font-mono font-semibold text-slate-700">${r.so_id}</td>
+          <td class="py-2 px-3">${r.date}</td>
+          <td class="py-2 px-3">${r.customer_type}</td>
+          <td class="py-2 px-3 font-medium">${r.model}</td>
+          <td class="py-2 px-3">${r.service_type}</td>
+          <td class="py-2 px-3 text-right font-semibold ${r.tat_minutes > 60 ? 'text-rose-600' : 'text-emerald-700'}">${r.tat_minutes}p</td>
+          <td class="py-2 px-3 text-right">${r.nps_score}/10</td>
+          <td class="py-2 px-3 text-right font-bold">${r.points}</td>
+          <td class="py-2 px-3">${r.staff_name}</td>
+          <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${r.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${r.status}</span></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('centerTableBody').innerHTML = centerList.map(r => `
+        <tr class="hover:bg-slate-50 order-row">
+          <td class="py-2 px-3 font-mono font-semibold text-slate-700">${r.so_id}</td>
+          <td class="py-2 px-3">${r.date}</td>
+          <td class="py-2 px-3">${r.transaction_type}</td>
+          <td class="py-2 px-3 font-medium">${r.model}</td>
+          <td class="py-2 px-3">${r.category}</td>
+          <td class="py-2 px-3 text-right font-bold">${r.qty}</td>
+          <td class="py-2 px-3 text-right font-semibold">${fmtVND(r.revenue_vnd)}</td>
+          <td class="py-2 px-3 text-right font-bold text-emerald-700">${r.points}</td>
+          <td class="py-2 px-3">${r.staff_name}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTables() {
+      const q = document.getElementById('searchGcsm').value.toLowerCase();
+      document.querySelectorAll('.order-row').forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    // --- UPLOAD LOGIC ---
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
+      document.getElementById('uploadModal').classList.add('flex');
+    }
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+      document.getElementById('uploadModal').classList.remove('flex');
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('selectedFileName').textContent = file.name;
+      const statusEl = document.getElementById('uploadStatus');
+      statusEl.className = 'text-xs p-3 rounded-xl bg-blue-50 text-blue-700 block';
+      statusEl.textContent = 'Đang đọc và kiểm tra cấu trúc file...';
+
+      const reader = new FileReader();
+      if (file.name.endsWith('.json')) {
+        reader.onload = (ev) => {
+          try {
+            parsedUploadPayload = JSON.parse(ev.target.result);
+            parsedUploadPayload.metadata = parsedUploadPayload.metadata || {};
+            parsedUploadPayload.metadata.source_filename = file.name;
+            statusEl.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 block';
+            statusEl.textContent = 'File JSON hợp lệ! Nhấn "Cập Nhật & Công Khai Dữ Liệu" để áp dụng.';
+            document.getElementById('btnConfirmUpload').disabled = false;
+          } catch (err) {
+            statusEl.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-700 block';
+            statusEl.textContent = 'Lỗi đọc file JSON: ' + err.message;
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        reader.onload = (ev) => {
+          try {
+            const wb = XLSX.read(ev.target.result, { type: 'array' });
+            const getSheet = (name) => wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name]) : null;
+
+            const kpiSummary = getSheet('KPI_Summary') || currentData.kpi_summary;
+            const gcsmSo = getSheet('GCSM SO') || currentData.gcsm_so;
+            const centerSo = getSheet('Center SO') || currentData.center_so;
+            const rules = getSheet('Rule') || currentData.rules;
+            const staffPerf = getSheet('Staff_Performance') || currentData.staff_performance;
+            const custSeg = getSheet('Customer_Segment') || currentData.customer_segment;
+            const appQueue = getSheet('Approval_Queue') || currentData.approval_queue;
+
+            // Recalculate service metrics dynamically from GCSM SO
+            const completed = gcsmSo.filter(x => x.status === 'Completed').length;
+            const avgTat = gcsmSo.length ? Math.round((gcsmSo.reduce((s, x) => s + Number(x.tat_minutes || 0), 0) / gcsmSo.length) * 10) / 10 : 0;
+            const under1h = gcsmSo.length ? Math.round((gcsmSo.filter(x => Number(x.tat_minutes) <= 60).length / gcsmSo.length) * 1000) / 10 : 0;
+            const totalSvcPts = gcsmSo.reduce((s, x) => s + Number(x.points || 0), 0);
+
+            parsedUploadPayload = {
+              ...currentData,
+              metadata: {
+                ...currentData.metadata,
+                source_filename: file.name,
+                last_updated: new Date().toISOString()
+              },
+              kpi_summary: kpiSummary,
+              gcsm_so: gcsmSo,
+              center_so: centerSo,
+              rules: rules,
+              staff_performance: staffPerf,
+              customer_segment: custSeg,
+              approval_queue: appQueue,
+              service_metrics: {
+                ...currentData.service_metrics,
+                total_service_orders: gcsmSo.length,
+                completed_orders: completed,
+                pending_orders: gcsmSo.length - completed,
+                avg_tat_minutes: avgTat,
+                tat_under_1h_pct: under1h,
+                total_service_points: totalSvcPts
+              }
+            };
+
+            statusEl.className = 'text-xs p-3 rounded-xl bg-emerald-50 text-emerald-800 block';
+            statusEl.textContent = `Đã đọc thành công ${wb.SheetNames.length} sheet từ Excel! Sẵn sàng đồng bộ lên web.`;
+            document.getElementById('btnConfirmUpload').disabled = false;
+          } catch (err) {
+            statusEl.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-700 block';
+            statusEl.textContent = 'Lỗi phân tích file Excel: ' + err.message;
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    async function processAndPublishUpload() {
+      if (!parsedUploadPayload) return;
+      const btn = document.getElementById('btnConfirmUpload');
+      const statusEl = document.getElementById('uploadStatus');
+      btn.disabled = true;
+      btn.textContent = 'Đang đồng bộ...';
+
+      const uploader = document.getElementById('uploaderName').value.trim();
+      if (uploader) parsedUploadPayload.metadata.uploaded_by = uploader;
+
+      try {
+        const res = await fetch('/api/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-upload-pin': document.getElementById('uploadPinInput').value.trim()
+          },
+          body: JSON.stringify(parsedUploadPayload)
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Upload thất bại');
+
+        currentData = result.data;
+        renderAll();
+        updateSyncBadge(result.savedTargets.includes('github_committed') ? 'github_realtime' : (result.savedTargets.includes('kv_realtime') ? 'kv_realtime' : 'memory_warm'));
+
+        statusEl.className = 'text-xs p-3 rounded-xl bg-emerald-100 text-emerald-900 font-medium block';
+        statusEl.textContent = 'Đã cập nhật dữ liệu thành công! Mọi người truy cập link đều sẽ thấy số liệu mới này.';
+        setTimeout(() => closeUploadModal(), 1200);
+      } catch (err) {
+        statusEl.className = 'text-xs p-3 rounded-xl bg-rose-50 text-rose-700 block';
+        statusEl.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Cập Nhật & Công Khai Dữ Liệu';
+      }
+    }
+
+    // --- EXECUTIVE REPORT EXPORT ---
+    function openReportModal() {
+      if (!currentData) return;
+      const { metadata, kpi_summary, service_metrics, staff_performance } = currentData;
+      const totalRev = kpi_summary.reduce((s, x) => s + Number(x.revenue_vnd || 0), 0);
+      const totalActualPts = kpi_summary.reduce((s, x) => s + Number(x.actual_points || 0), 0) + Number(service_metrics.total_service_points || 0);
+      const totalTargetPts = kpi_summary.reduce((s, x) => s + Number(x.target_points || 0), 0) + 25;
+      const pctTotal = totalTargetPts > 0 ? Math.round((totalActualPts / totalTargetPts) * 1000) / 10 : 0;
+
+      const catLines = kpi_summary.map(c => `  • ${c.category}: ${c.actual_qty}/${c.target_qty} máy (${c.completion_pct}%) - ${fmtVND(c.revenue_vnd)}`).join('\n');
+      const staffLines = [...staff_performance].sort((a, b) => b.kpi_pct - a.kpi_pct).map((s, i) =>
+        `  ${i + 1}. ${s.staff_name}: ${s.total_points}/${s.target_points} điểm (${s.kpi_pct}%) | TAT: ${s.avg_tat_min}p | NPS: ${s.nps_score}%`
+      ).join('\n');
+
+      const reportText = [
+        `📊 BÁO CÁO NHANH HOẠT ĐỘNG CỬA HÀNG`,
+        `Đơn vị: ${metadata.store_name}`,
+        `Kỳ báo cáo: ${metadata.reporting_period} | Cập nhật: ${new Date(metadata.last_updated).toLocaleString('vi-VN')}`,
+        `--------------------------------------------------`,
+        `1. TỔNG QUAN CHỈ SỐ CHÍNH:`,
+        `  • Tổng doanh thu: ${fmtVND(totalRev)}`,
+        `  • Tổng điểm KPI: ${fmtNum(totalActualPts)} / ${fmtNum(totalTargetPts)} điểm (${pctTotal}%)`,
+        `  • Dịch vụ (GCSM): ${service_metrics.completed_orders}/${service_metrics.total_service_orders} đơn | TAT TB: ${service_metrics.avg_tat_minutes} phút (${service_metrics.tat_under_1h_pct}% < 1h)`,
+        `  • Điểm hài lòng NPS: ${service_metrics.nps_score}%`,
+        ``,
+        `2. KẾT QUẢ THEO NGÀNH HÀNG:`,
+        catLines,
+        ``,
+        `3. HIỆU SUẤT NHÂN VIÊN:`,
+        staffLines,
+        `--------------------------------------------------`,
+        `Nguồn dữ liệu: ${metadata.source_filename || 'Hệ thống Dashboard'}`
+      ].join('\n');
+
+      document.getElementById('reportTextArea').value = reportText;
+      document.getElementById('copyFeedback').textContent = '';
+      document.getElementById('reportModal').classList.remove('hidden');
+      document.getElementById('reportModal').classList.add('flex');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.add('hidden');
+      document.getElementById('reportModal').classList.remove('flex');
+    }
+
+    function copyReportText() {
+      const ta = document.getElementById('reportTextArea');
+      ta.select();
+      navigator.clipboard.writeText(ta.value);
+      document.getElementById('copyFeedback').textContent = '✓ Đã copy báo cáo vào bộ nhớ tạm!';
+    }
+
+    function downloadReportTxt() {
+      const content = document.getElementById('reportTextArea').value;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Bao_Cao_Nhanh_OPPO_Store_${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Initialize
+    loadDashboardData();
+  </script>
+</body>
+</html>
