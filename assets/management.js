@@ -39,7 +39,7 @@ function mgUpload(file,src){
   const rd=new FileReader();rd.onerror=()=>{const msg='Không đọc được file. Hãy thử lưu lại file dưới dạng .xlsx.';if(status)status.textContent=msg;if(typeof showToast==='function')showToast(msg,'error');};
   rd.onload=e=>{try{
     const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true}),token=src==='CENTER'?'center':'gcsm';
-    let candidates=wb.SheetNames.filter(n=>mgHeaderKey(n).includes(token));if(!candidates.length&&wb.SheetNames.length===1)candidates=[wb.SheetNames[0]];if(!candidates.length)candidates=wb.SheetNames.slice();
+    let candidates=wb.SheetNames.filter(n=>mgHeaderKey(n).includes(token));candidates=[...candidates,...wb.SheetNames.filter(n=>!candidates.includes(n))];
     let sheetName=null,header=null;for(const n of candidates){const h=mgFindHeader(wb.Sheets[n],src);if(h){sheetName=n;header=h;break;}}
     if(!sheetName)throw Error('Không nhận diện được hàng tiêu đề. Kiểm tra file có sheet '+(src==='CENTER'?'Center SO':'GCSM SO')+' và các cột mã đơn/ngày/nhân viên/sản phẩm.');
     const headers=header.headers.map(v=>String(v??'').trim()),rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{range:header.row,defval:null,cellDates:true}),a=[];
