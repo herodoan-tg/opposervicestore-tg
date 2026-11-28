@@ -123,6 +123,7 @@ function setupEventListeners() {
     currentData = JSON.parse(JSON.stringify(window.DEFAULT_SHOP_DATA));
     updateStorageBadge(false);
     renderAll();
+    if (typeof window.cloudSaveData === 'function') window.cloudSaveData();
     showToast('Đã khôi phục về dữ liệu mặc định ban đầu.');
   });
 
@@ -147,6 +148,7 @@ function setupEventListeners() {
 
 // Parse Uploaded Excel File using SheetJS
 function handleExcelFile(file) {
+  if (typeof cloudRole !== 'undefined' && cloudRole !== 'admin') { showToast('Tài khoản nhân viên chỉ được xem dữ liệu. Vui lòng liên hệ quản trị viên để upload.', 'error'); return; }
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
@@ -163,6 +165,7 @@ function handleExcelFile(file) {
       }
 
       renderAll();
+      if (typeof window.cloudSaveData === 'function') window.cloudSaveData();
       showToast(`Đã cập nhật & lưu trữ dữ liệu từ file: ${file.name}`);
     } catch (err) {
       console.error(err);
