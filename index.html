@@ -654,4 +654,450 @@
           inKpiBlock = true;
           continue;
         }
-        if (inK
+        if (inKpiBlock) {
+          if (row.every(v => v === '')) {
+            if (results.length > 3) break;
+            continue;
+          }
+          if (joined.includes('stt') && (joined.includes('target') || joined.includes('mục tiêu'))) continue;
+
+          let name = '';
+          const nums = [];
+          row.forEach((cell, idx) => {
+            if (!cell) return;
+            if (idx === 0 && /^\d+$/.test(cell)) return;
+            const numVal = parseNumber(cell);
+            if (!isNaN(numVal) && /[0-9]/.test(cell) && cell.length < 20) {
+              nums.push({ raw: cell, val: numVal, isPercent: cell.includes('%') });
+            } else if (cell.length > name.length) {
+              name = cell;
+            }
+          });
+
+          if (name && nums.length >= 1) {
+            const t = nums[0];
+            const a = nums.length >= 2 ? nums[1] : { val: 0, isPercent: t.isPercent };
+            const r = nums.length >= 3 ? nums[2] : null;
+            results.push({
+              key: `kpi_${results.length}_${normalizeStr(name).slice(0, 20)}`,
+              name,
+              excelTarget: t.val,
+              actual: a.val,
+              isPercent: t.isPercent || a.isPercent,
+              rawRate: r ? r.raw : ''
+            });
+          }
+        }
+      }
+      return results;
+    }
+
+    function parseTatServiceSheet(ws) {
+      if (!ws) return [];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      const results = [];
+      let startIdx = -1;
+
+      for (let i = 0; i < rows.length; i++) {
+        const line = rows[i].join(' ').toLowerCase();
+        if (line.includes('đánh giá kpi service') || line.includes('kpi service 2025') || line.includes('tat')) {
+          startIdx = i + 1;
+          break;
+        }
+      }
+      if (startIdx === -1) startIdx = 0;
+
+      for (let i = startIdx; i < rows.length; i++) {
+        const row = rows[i].map(c => String(c).trim());
+        if (row.every(v => v === '')) {
+          if (results.length >= 3) break;
+          continue;
+        }
+        const lineLower = row.join(' ').toLowerCase();
+        if (lineLower.includes('stt') || lineLower.includes('chỉ tiêu') || lineLower.includes('hạng mục')) continue;
+
+        let metricName = '';
+        const numbers = [];
+        row.forEach((cell, idx) => {
+          if (!cell) return;
+          if (idx === 0 && /^\d+$/.test(cell)) return;
+          const n = parseNumber(cell);
+          if (!isNaN(n) && /[0-9]/.test(cell) && cell.length < 18) {
+            numbers.push({ raw: cell, val: n });
+          } else if (cell.length > metricName.length) {
+            metricName = cell;
+          }
+        });
+
+        if (metricName && numbers.length >= 1) {
+          results.push({
+            name: metricName,
+            targetRaw: numbers[0].raw,
+            targetVal: numbers[0].val,
+            actualRaw: numbers[1] ? numbers[1].raw : numbers[0].raw,
+            actualVal: numbers[1] ? numbers[1].val : numbers[0].val,
+            noteRaw: numbers[2] ? numbers[2].raw : ''
+          });
+        }
+      }
+      return results;
+    }
+
+    function parseSalesSheet(ws, sourceLabel) {
+      if (!ws) return [];
+      const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (rawRows.length < 2) return [];
+
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(15, rawRows.length); i++) {
+        const rowStr = rawRows[i].join(' ').toLowerCase();
+        if (rowStr.includes('nhân viên') || rowStr.includes('tư vấn') || rowStr.includes('mã đơn') || rowStr.includes('sản phẩm') || rowStr.includes('thành tiền')) {
+          headerIdx = i;
+          break;
+        }
+      }
+
+      const headers = rawRows[headerIdx].map(h => normalizeStr(String(h)));
+      const colStaff = findColIndex(headers, ['ten nhan vien', 'nhan vien ban', 'nhan vien', 'nguoi tao', 'tu van vien', 'salesman', 'staff', 'nvbh', 'ktv']);
+      const colOrderCode = findColIndex(headers, ['ma don', 'so phieu', 'ma phieu', 'order', 'ticket', 'so hd', 'so hoa don', 'ma giao dich']);
+      const colDate = findColIndex(headers, ['ngay', 'date', 'thoi gian', 'created']);
+      const colProduct = findColIndex(headers, ['ten san pham', 'san pham', 'model', 'ten hang', 'mat hang', 'dich vu', 'item', 'product']);
+      const colQty = findColIndex(headers, ['so luong', 'sl', 'qty', 'quantity']);
+      const colAmount = findColIndex(headers, ['thanh tien', 'doanh thu', 'doanh so', 'tong tien', 'gia tri', 'amount', 'total', 'thuc thu']);
+
+      const parsed = [];
+      for (let r = headerIdx + 1; r < rawRows.length; r++) {
+        const row = rawRows[r];
+        if (!row || row.every(c => String(c).trim() === '')) continue;
+
+        const firstCell = normalizeStr(String(row[0] || ''));
+        if (firstCell.startsWith('tong') || firstCell.startsWith('total')) continue;
+
+        let staffName = colStaff !== -1 ? String(row[colStaff] || '').trim().replace(/\s+/g, ' ') : '';
+        if (!staffName || staffName === '0') staffName = 'Chưa gán nhân viên';
+
+        const orderCode = colOrderCode !== -1 ? String(row[colOrderCode] || '').trim() : `ROW-${r + 1}`;
+        const dateVal = colDate !== -1 ? formatExcelDate(row[colDate]) : '';
+        const productName = colProduct !== -1 ? String(row[colProduct] || '').trim() : 'Sản phẩm / Dịch vụ';
+        const qty = colQty !== -1 ? (parseNumber(row[colQty]) || 1) : 1;
+        const amount = colAmount !== -1 ? (parseNumber(row[colAmount]) || 0) : 0;
+
+        if (!productName && amount === 0) continue;
+        parsed.push({ source: sourceLabel, orderCode: orderCode || `${sourceLabel}-${r}`, date: dateVal, staff: staffName, product: productName, qty, amount });
+      }
+      return parsed;
+    }
+
+    function findColIndex(headers, candidates) {
+      for (const c of candidates) {
+        const exact = headers.findIndex(h => h === c);
+        if (exact !== -1) return exact;
+      }
+      for (const c of candidates) {
+        const partial = headers.findIndex(h => h.includes(c));
+        if (partial !== -1) return partial;
+      }
+      return -1;
+    }
+
+    function renderAll() {
+      renderOverviewTab();
+      renderStaffAndProducts();
+      renderOrdersTable();
+      renderTatTab();
+      renderTargetEditTab();
+    }
+
+    function getEffectiveTarget(item) {
+      return (customTargets && customTargets[item.key] !== undefined && !isNaN(customTargets[item.key]))
+        ? customTargets[item.key] : item.excelTarget;
+    }
+
+    function renderOverviewTab() {
+      const totalSales = appState.orders.reduce((s, o) => s + o.amount, 0);
+      const gcsmSales = appState.orders.filter(o => o.source === 'GCSM SO').reduce((s, o) => s + o.amount, 0);
+      const centerSales = appState.orders.filter(o => o.source === 'Center SO').reduce((s, o) => s + o.amount, 0);
+
+      document.getElementById('overviewCards').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Tổng Doanh Số (GCSM + Center)</div>
+          <div class="stat-value">${formatCurrency(totalSales)}</div>
+          <div class="stat-sub">${appState.orders.length.toLocaleString('vi-VN')} đơn hàng / phiếu</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Doanh Số GCSM SO</div>
+          <div class="stat-value">${formatCurrency(gcsmSales)}</div>
+          <div class="stat-sub">${totalSales ? ((gcsmSales / totalSales) * 100).toFixed(1) : 0}% tổng doanh thu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Doanh Số Center SO</div>
+          <div class="stat-value">${formatCurrency(centerSales)}</div>
+          <div class="stat-sub">${totalSales ? ((centerSales / totalSales) * 100).toFixed(1) : 0}% tổng doanh thu</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Chỉ Tiêu KPI Đang Theo Dõi</div>
+          <div class="stat-value">${appState.kpiSummary.length} hạng mục</div>
+          <div class="stat-sub">Từ Sheet Tổng Hợp</div>
+        </div>
+      `;
+
+      const tbody = document.querySelector('#kpiSummaryTable tbody');
+      if (!appState.kpiSummary.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Chưa tìm thấy dữ liệu Bảng báo cáo KPI / KPI报表 trong file</td></tr>`;
+      } else {
+        tbody.innerHTML = appState.kpiSummary.map((item, idx) => {
+          const target = getEffectiveTarget(item);
+          const pct = target > 0 ? (item.actual / target) * 100 : 0;
+          const badgeClass = pct >= 100 ? 'pill-good' : (pct >= 80 ? 'pill-warn' : 'pill-bad');
+          const fmt = item.isPercent ? (v => `${v}%`) : formatNumber;
+          return `
+            <tr>
+              <td>${idx + 1}</td>
+              <td><strong>${escapeHtml(item.name)}</strong></td>
+              <td class="num">${fmt(target)}</td>
+              <td class="num"><strong>${fmt(item.actual)}</strong></td>
+              <td class="num"><span class="status-pill ${badgeClass}">${pct.toFixed(1)}%</span></td>
+              <td>${item.rawRate || (pct >= 100 ? 'Đạt chuẩn' : 'Cần đẩy mạnh')}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (typeof Chart !== 'undefined') {
+        if (charts.overviewBar) charts.overviewBar.destroy();
+        charts.overviewBar = new Chart(document.getElementById('chartOverviewBar'), {
+          type: 'bar',
+          data: {
+            labels: appState.kpiSummary.slice(0, 10).map(i => i.name.slice(0, 22)),
+            datasets: [{
+              label: '% Hoàn thành Target',
+              data: appState.kpiSummary.slice(0, 10).map(i => {
+                const t = getEffectiveTarget(i);
+                return t > 0 ? Number(((i.actual / t) * 100).toFixed(1)) : 0;
+              }),
+              backgroundColor: '#008a4b',
+              borderRadius: 6
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        if (charts.channelDoughnut) charts.channelDoughnut.destroy();
+        charts.channelDoughnut = new Chart(document.getElementById('chartChannelDoughnut'), {
+          type: 'doughnut',
+          data: {
+            labels: ['GCSM SO', 'Center SO'],
+            datasets: [{ data: [gcsmSales, centerSales], backgroundColor: ['#2563eb', '#008a4b'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+    }
+
+    function populateEmployeeDropdowns() {
+      const uniqueStaff = [...new Set(appState.orders.map(o => o.staff))].sort((a, b) => a.localeCompare(b, 'vi'));
+      const html = `<option value="ALL">Tất cả nhân viên (${uniqueStaff.length})</option>` +
+        uniqueStaff.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+      document.getElementById('filterEmployeeName').innerHTML = html;
+      document.getElementById('filterOrderStaff').innerHTML = html;
+    }
+
+    function renderStaffAndProducts() {
+      const sourceFilter = document.getElementById('filterSourceStaff').value;
+      const staffFilter = document.getElementById('filterEmployeeName').value;
+      const prodQuery = normalizeStr(document.getElementById('searchProductInput').value);
+
+      const filtered = appState.orders.filter(o => {
+        if (sourceFilter !== 'ALL' && o.source !== sourceFilter) return false;
+        if (staffFilter !== 'ALL' && o.staff !== staffFilter) return false;
+        return true;
+      });
+
+      const staffMap = {};
+      let total = 0;
+      filtered.forEach(o => {
+        total += o.amount;
+        if (!staffMap[o.staff]) staffMap[o.staff] = { staff: o.staff, count: 0, qty: 0, amount: 0 };
+        staffMap[o.staff].count += 1;
+        staffMap[o.staff].qty += o.qty;
+        staffMap[o.staff].amount += o.amount;
+      });
+
+      const staffList = Object.values(staffMap).sort((a, b) => b.amount - a.amount);
+      const staffTbody = document.querySelector('#staffContributionTable tbody');
+      staffTbody.innerHTML = !staffList.length
+        ? `<tr><td colspan="6" class="empty-state">Không có dữ liệu nhân sự</td></tr>`
+        : staffList.map((s, idx) => `
+          <tr>
+            <td><strong>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1)}</strong></td>
+            <td><strong>${escapeHtml(s.staff)}</strong></td>
+            <td class="num">${s.count.toLocaleString('vi-VN')}</td>
+            <td class="num">${s.qty.toLocaleString('vi-VN')}</td>
+            <td class="num"><strong>${formatCurrency(s.amount)}</strong></td>
+            <td class="num"><span class="badge-info">${total ? ((s.amount / total) * 100).toFixed(1) : '0.0'}%</span></td>
+          </tr>
+        `).join('');
+
+      if (typeof Chart !== 'undefined') {
+        if (charts.staffSales) charts.staffSales.destroy();
+        charts.staffSales = new Chart(document.getElementById('chartStaffSales'), {
+          type: 'bar',
+          data: {
+            labels: staffList.map(s => s.staff),
+            datasets: [{ label: 'Doanh số (VNĐ)', data: staffList.map(s => s.amount), backgroundColor: '#008a4b', borderRadius: 6 }]
+          },
+          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+        });
+      }
+
+      const prodMap = {};
+      filtered.forEach(o => {
+        if (prodQuery && !normalizeStr(o.product).includes(prodQuery)) return;
+        const key = `${o.product}__${o.source}__${o.staff}`;
+        if (!prodMap[key]) prodMap[key] = { product: o.product, source: o.source, staff: o.staff, qty: 0, amount: 0 };
+        prodMap[key].qty += o.qty;
+        prodMap[key].amount += o.amount;
+      });
+
+      const prodList = Object.values(prodMap).sort((a, b) => b.amount - a.amount);
+      document.querySelector('#productBreakdownTable tbody').innerHTML = !prodList.length
+        ? `<tr><td colspan="6" class="empty-state">Không có dữ liệu sản phẩm</td></tr>`
+        : prodList.map((p, idx) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${escapeHtml(p.product)}</strong></td>
+            <td><span class="badge-sheet ${p.source === 'GCSM SO' ? 'badge-gcsm' : 'badge-center'}">${p.source}</span></td>
+            <td>${escapeHtml(p.staff)}</td>
+            <td class="num">${p.qty.toLocaleString('vi-VN')}</td>
+            <td class="num"><strong>${formatCurrency(p.amount)}</strong></td>
+          </tr>
+        `).join('');
+    }
+
+    function renderOrdersTable() {
+      const sheetVal = document.getElementById('filterOrderSheet').value;
+      const staffVal = document.getElementById('filterOrderStaff').value;
+      const query = normalizeStr(document.getElementById('searchOrderInput').value);
+
+      const list = appState.orders.filter(o => {
+        if (sheetVal !== 'ALL' && o.source !== sheetVal) return false;
+        if (staffVal !== 'ALL' && o.staff !== staffVal) return false;
+        if (query && !normalizeStr(`${o.orderCode} ${o.staff} ${o.product} ${o.date}`).includes(query)) return false;
+        return true;
+      });
+
+      const sum = list.reduce((s, o) => s + o.amount, 0);
+      document.getElementById('orderSummaryStrip').textContent =
+        `Hiển thị ${list.length.toLocaleString('vi-VN')} giao dịch — Tổng giá trị: ${formatCurrency(sum)}`;
+
+      document.querySelector('#ordersDetailTable tbody').innerHTML = !list.length
+        ? `<tr><td colspan="7" class="empty-state">Không tìm thấy đơn hàng / phiếu giao dịch</td></tr>`
+        : list.slice(0, 500).map(o => `
+          <tr>
+            <td><span class="badge-sheet ${o.source === 'GCSM SO' ? 'badge-gcsm' : 'badge-center'}">${o.source}</span></td>
+            <td><strong>${escapeHtml(o.orderCode)}</strong></td>
+            <td>${escapeHtml(o.date)}</td>
+            <td><strong>${escapeHtml(o.staff)}</strong></td>
+            <td>${escapeHtml(o.product)}</td>
+            <td class="num">${o.qty.toLocaleString('vi-VN')}</td>
+            <td class="num"><strong>${formatCurrency(o.amount)}</strong></td>
+          </tr>
+        `).join('');
+    }
+
+    function renderTatTab() {
+      const cards = document.getElementById('tatHighlightCards');
+      const tbody = document.querySelector('#tatServiceTable tbody');
+      if (!appState.tatService.length) {
+        cards.innerHTML = '';
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Chưa có dữ liệu mục ĐÁNH GIÁ KPI SERVICE 2025</td></tr>`;
+        return;
+      }
+
+      cards.innerHTML = appState.tatService.slice(0, 4).map(i => `
+        <div class="stat-card blue">
+          <div class="stat-label">${escapeHtml(i.name)}</div>
+          <div class="stat-value">${escapeHtml(i.actualRaw)}</div>
+          <div class="stat-sub">Target / Chuẩn: ${escapeHtml(i.targetRaw)}</div>
+        </div>
+      `).join('');
+
+      tbody.innerHTML = appState.tatService.map((i, idx) => {
+        const diff = i.actualVal - i.targetVal;
+        const ok = i.actualVal >= i.targetVal;
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${escapeHtml(i.name)}</strong></td>
+            <td class="num">${escapeHtml(i.targetRaw)}</td>
+            <td class="num"><strong>${escapeHtml(i.actualRaw)}</strong></td>
+            <td class="num">${diff >= 0 ? '+' : ''}${diff.toFixed(2)}</td>
+            <td><span class="status-pill ${ok ? 'pill-good' : 'pill-warn'}">${i.noteRaw || (ok ? 'Đạt' : 'Theo dõi')}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      if (typeof Chart !== 'undefined') {
+        if (charts.tatChart) charts.tatChart.destroy();
+        charts.tatChart = new Chart(document.getElementById('chartTatComparison'), {
+          type: 'bar',
+          data: {
+            labels: appState.tatService.map(i => i.name.slice(0, 26)),
+            datasets: [
+              { label: 'Target / Chuẩn', data: appState.tatService.map(i => i.targetVal), backgroundColor: '#94a3b8' },
+              { label: 'Thực Tế Đạt', data: appState.tatService.map(i => i.actualVal), backgroundColor: '#008a4b' }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+    }
+
+    function renderTargetEditTab() {
+      const tbody = document.querySelector('#targetEditTable tbody');
+      tbody.innerHTML = !appState.kpiSummary.length
+        ? `<tr><td colspan="6" class="empty-state">Tải file Excel để hiển thị danh sách Target</td></tr>`
+        : appState.kpiSummary.map((item, idx) => {
+          const cur = getEffectiveTarget(item);
+          const pct = cur > 0 ? ((item.actual / cur) * 100).toFixed(1) : '0.0';
+          return `
+            <tr>
+              <td>${idx + 1}</td>
+              <td><strong>${escapeHtml(item.name)}</strong></td>
+              <td class="num">${formatNumber(item.excelTarget)}</td>
+              <td class="num"><input type="number" step="any" class="target-input" data-key="${item.key}" value="${cur}" /></td>
+              <td class="num">${formatNumber(item.actual)}</td>
+              <td class="num"><span class="badge-info">${pct}%</span></td>
+            </tr>
+          `;
+        }).join('');
+    }
+
+    function normalizeStr(str) {
+      return String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
+    }
+    function parseNumber(val) {
+      if (typeof val === 'number') return val;
+      if (!val) return NaN;
+      const cleaned = String(val).replace(/[^0-9.\-]/g, '');
+      return cleaned ? parseFloat(cleaned) : NaN;
+    }
+    function formatCurrency(num) { return Math.round(num || 0).toLocaleString('vi-VN') + ' ₫'; }
+    function formatNumber(num) { return (num === null || num === undefined || isNaN(num)) ? '0' : Number(num).toLocaleString('vi-VN'); }
+    function formatExcelDate(val) {
+      if (!val) return '';
+      if (typeof val === 'number') return new Date(Math.round((val - 25569) * 86400 * 1000)).toLocaleDateString('vi-VN');
+      return String(val).trim();
+    }
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+    }
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3200);
+    }
+  </script>
+</body>
+</html>
