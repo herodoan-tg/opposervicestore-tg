@@ -8,7 +8,7 @@ let mgInventoryPromise=null,mgInventory=null,mgInventoryError='';
 const MG_INV_URL='https://raw.githubusercontent.com/herodoan-tg/opposervicestore-tg/main/T%E1%BB%93n%20kho%20Center.csv';
 const MG_AGE_URL='https://raw.githubusercontent.com/herodoan-tg/opposervicestore-tg/main/T%E1%BB%93n%20kho%20tr%C3%AAn%2060%20day.csv';
 function mgCsvRows(text){
-  const lines=String(text||'').replace(/^\\uFEFF/,'').split(/\\r?\\n/).filter((x,i,a)=>x.length||i<a.length-1);
+  const lines=String(text||'').replace(/^\uFEFF/,'').split(/\r?\n/).filter((x,i,a)=>x.length||i<a.length-1);
   if(!lines.length)return [];
   const parseLine=line=>{const out=[];let v='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){v+='"';i++;}else q=!q;}else if(c===','&&!q){out.push(v);v='';}else v+=c;}out.push(v);return out;};
   const headers=parseLine(lines.shift()).map(x=>String(x||'').trim());
