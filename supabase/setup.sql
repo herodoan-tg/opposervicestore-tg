@@ -98,3 +98,16 @@ with check (public.dashboard_is_admin() and updated_by = auth.uid());
 grant usage on schema public to authenticated;
 grant select on public.dashboard_profiles to authenticated;
 grant insert, update, select on public.dashboard_state to authenticated;
+
+-- Enable live multi-device updates through Supabase Realtime (safe if already enabled).
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'dashboard_state'
+  ) then
+    alter publication supabase_realtime add table public.dashboard_state;
+  end if;
+end $$;
