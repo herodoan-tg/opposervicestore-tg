@@ -100,7 +100,7 @@ function mgExportExcel(){
     const center=mgFiltered('CENTER').filter(r=>String(r.export_type||'').toLowerCase().includes('bán')&&String(r.status||'').toLowerCase().includes('hiệu lực'));
     const gcsm=mgFiltered('GCSM'),sum=(a,k)=>a.reduce((v,r)=>v+(Number(r[k])||0),0);
     const centerRevenue=center.reduce((v,r)=>v+(Number(r.receivable)||Number(r.retail_revenue)||0),0),gcsmRevenue=sum(gcsm,'retail_price');
-    const allProductivity=Array.isArray(d.productivity)?d.productivity:[],kpi=Array.isArray(d.kpiReport)?d.kpiReport:[];const productivity=staff==='ALL'?allProductivity:allProductivity.filter(x=>mgNorm(x.name)===mgNorm(staff));
+    const allProductivity=Array.isArray(d.productivity)?d.productivity:[],kpi=Array.isArray(d.kpiReport)?d.kpiReport:[],staffFilter=document.getElementById('dashStaff').value;const productivity=staffFilter==='ALL'?allProductivity:allProductivity.filter(x=>mgNorm(x.name)===mgNorm(staffFilter));
     const tat=d.tatKpi||{},kl=d.klDl||{},pct=v=>(Number(v||0)*100).toFixed(1)+'%';
     const from=document.getElementById('dashFrom').value,to=document.getElementById('dashTo').value,staff=document.getElementById('dashStaff').value;
     const range=from||to?(from||'đầu kỳ')+' → '+(to||'hiện tại'):'Toàn bộ thời gian trong dữ liệu';
