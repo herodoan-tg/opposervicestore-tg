@@ -155,7 +155,7 @@ function mgExportExcel(){
   try{
     if(!currentData)throw Error('Chưa có dữ liệu dashboard.');
     const d=currentData,cats=Array.isArray(d.categories)?d.categories:[],total=cats.find(x=>x.key==='TOTAL')||{actual:0,target:0};
-    const center=mgFiltered('CENTER').filter(r=>String(r.export_type||'').toLowerCase().includes('bán')&&String(r.status||'').toLowerCase().includes('hiệu lực'));
+    const center=mgFiltered('CENTER').filter(mgIsCenterSales);
     const gcsm=mgFiltered('GCSM'),sum=(a,k)=>a.reduce((v,r)=>v+(Number(r[k])||0),0);
     const centerRevenue=center.reduce((v,r)=>v+(Number(r.receivable)||Number(r.retail_revenue)||0),0),gcsmRevenue=sum(gcsm,'retail_price');
     const allProductivity=Array.isArray(d.productivity)?d.productivity:[],kpi=Array.isArray(d.kpiReport)?d.kpiReport:[],staffFilter=document.getElementById('dashStaff').value;const productivity=staffFilter==='ALL'?allProductivity:allProductivity.filter(x=>mgNorm(x.name)===mgNorm(staffFilter));
