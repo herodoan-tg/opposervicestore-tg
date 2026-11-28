@@ -79,11 +79,6 @@
             <input id="excelUploadInput" type="file" accept=".xlsx,.xls" class="hidden" />
           </label>
 
-          <button id="exportJsonBtn" title="Tải xuống file JSON để cập nhật dữ liệu mặc định lên GitHub" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs sm:text-sm font-medium transition">
-            <i data-lucide="download" class="w-4 h-4 text-slate-500"></i>
-            <span class="hidden sm:inline">Xuất JSON</span>
-          </button>
-
           <button id="resetStorageBtn" title="Khôi phục về dữ liệu gốc ban đầu" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-300 hover:border-rose-200 text-xs sm:text-sm font-medium transition">
             <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
             <span class="hidden sm:inline">Dữ liệu gốc</span>
@@ -365,9 +360,45 @@
 
 
     <section id="tab-service" class="tab-content hidden space-y-6"><div id="mgServiceCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div><div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-3">Năng Suất Kỹ Thuật Viên</h3><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50"><tr><th class="p-2">Kỹ thuật viên</th><th class="p-2 text-right">Volume</th><th class="p-2 text-right">Sửa chữa</th><th class="p-2 text-right">DV cộng thêm</th><th class="p-2 text-right">SO thường</th></tr></thead><tbody id="mgServiceStaff" class="divide-y"></tbody></table></div></div></section>
-    <section id="tab-management" class="tab-content hidden space-y-6"><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3"><h3 class="font-bold">Upload Dữ Liệu Theo Nguồn</h3><p class="text-xs text-slate-500">Mỗi lần upload sẽ thay thế dữ liệu của nguồn tương ứng, nguồn còn lại được giữ nguyên.</p><label class="block text-sm font-semibold">Center SO<input id="mgCenterFile" type="file" accept=".xlsx,.xls" class="block w-full mt-2 text-sm"></label><p id="mgCenterStatus" class="text-xs text-slate-500">Chưa cập nhật riêng</p><hr><label class="block text-sm font-semibold">GCSM SO<input id="mgGcsmFile" type="file" accept=".xlsx,.xls" class="block w-full mt-2 text-sm"></label><p id="mgGcsmStatus" class="text-xs text-slate-500">Chưa cập nhật riêng</p><p class="text-xs bg-amber-50 text-amber-800 rounded-lg p-3">Dữ liệu chỉ lưu trên trình duyệt/thiết bị hiện tại, không tự đồng bộ sang thiết bị khác.</p></div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3"><h3 class="font-bold">Điều Chỉnh Target</h3><label class="block text-xs font-semibold">Tháng áp dụng<input id="mgTargetMonth" type="month" class="block border rounded-lg px-3 py-2 mt-1 text-sm"></label><div id="mgTargetEditor" class="space-y-2"></div><div class="flex gap-2"><button id="mgSaveTargets" class="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold">Lưu Target</button><button id="mgResetTargets" class="rounded-lg border px-4 py-2 text-sm">Khôi phục gốc</button></div></div></div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-5"><h3 class="font-bold mb-2">Xuất Báo Cáo</h3><p class="text-xs text-slate-500 mb-3">Excel gồm KPI, sản phẩm, nhân sự và giao dịch theo bộ lọc.</p><button id="mgExportExcel" class="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm font-semibold">Xuất báo cáo Excel</button><button id="mgExportJson" class="ml-2 rounded-lg border px-4 py-2 text-sm">Sao lưu JSON</button></div><div class="bg-white rounded-2xl border border-slate-200 p-5"><h3 class="font-bold mb-3">Cảnh Báo Quản Lý</h3><div id="mgAlerts" class="grid md:grid-cols-2 gap-3"></div></div></section>
+    <section id="tab-management" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+          <div class="flex items-center gap-2"><i data-lucide="file-spreadsheet" class="w-5 h-5 text-blue-600"></i><h3 class="font-bold">Upload Center SO</h3></div>
+          <p class="text-xs text-slate-500">Chọn file Excel có sheet Center SO. Chỉ thay thế dữ liệu Center SO; GCSM SO được giữ nguyên.</p>
+          <label class="block text-sm font-semibold">Chọn file Center SO<input id="mgCenterFile" type="file" accept=".xlsx,.xls" class="block w-full mt-2 text-sm"></label>
+          <p id="mgCenterStatus" class="text-xs text-slate-500">Chưa cập nhật riêng</p>
+          <p class="text-xs text-emerald-700 bg-emerald-50 rounded-lg p-3">Sau khi upload, KPI, doanh thu, điểm bán, nhân viên và chi tiết đơn hàng sẽ cập nhật từ dữ liệu mới.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+          <div class="flex items-center gap-2"><i data-lucide="wrench" class="w-5 h-5 text-violet-600"></i><h3 class="font-bold">Upload GCSM SO</h3></div>
+          <p class="text-xs text-slate-500">Chọn file Excel có sheet GCSM SO. Chỉ thay thế dữ liệu GCSM SO; Center SO được giữ nguyên.</p>
+          <label class="block text-sm font-semibold">Chọn file GCSM SO<input id="mgGcsmFile" type="file" accept=".xlsx,.xls" class="block w-full mt-2 text-sm"></label>
+          <p id="mgGcsmStatus" class="text-xs text-slate-500">Chưa cập nhật riêng</p>
+          <p class="text-xs text-emerald-700 bg-emerald-50 rounded-lg p-3">Sau khi upload, điểm dịch vụ, sản phẩm, nhân viên và chi tiết giao dịch sẽ cập nhật từ dữ liệu mới.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+          <div class="flex items-center gap-2"><i data-lucide="target" class="w-5 h-5 text-emerald-600"></i><h3 class="font-bold">Điều Chỉnh Target</h3></div>
+          <label class="block text-xs font-semibold">Tháng áp dụng<input id="mgTargetMonth" type="month" class="block border rounded-lg px-3 py-2 mt-1 text-sm"></label>
+          <div id="mgTargetEditor" class="space-y-2"></div>
+          <div class="flex flex-wrap gap-2"><button id="mgSaveTargets" class="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold">Lưu Target</button><button id="mgResetTargets" class="rounded-lg border px-4 py-2 text-sm">Khôi phục gốc</button></div>
+          <p class="text-xs text-slate-500">Target được lưu theo từng tháng và áp dụng trực tiếp vào KPI, biểu đồ, tỷ lệ hoàn thành và cảnh báo.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+          <h3 class="font-bold">Xuất Báo Cáo</h3>
+          <p class="text-xs text-slate-500">Báo cáo tổng hợp Excel theo bộ lọc hiện tại hoặc xuất riêng báo cáo giao dịch trong một ngày.</p>
+          <button id="mgExportExcel" class="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm font-semibold">Xuất báo cáo tổng hợp</button>
+          <div class="border-t pt-3 mt-2 space-y-2">
+            <label for="mgDailyDate" class="block text-xs font-semibold">Ngày cần xuất báo cáo</label>
+            <div class="flex flex-wrap gap-2"><input id="mgDailyDate" type="date" class="border rounded-lg px-3 py-2 text-sm"><button id="mgExportDaily" class="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold">Xuất báo cáo hàng ngày</button></div>
+            <p class="text-xs text-slate-500">File gồm tổng quan, giao dịch Center SO, giao dịch GCSM SO và tổng hợp theo nhân viên của ngày đã chọn.</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5"><h3 class="font-bold mb-3">Cảnh Báo Quản Lý</h3><div id="mgAlerts" class="grid md:grid-cols-2 gap-3"></div></div>
+      </div>
+      <p class="text-xs text-amber-700 bg-amber-50 rounded-xl p-3">Lưu ý: dữ liệu hiện được lưu trên trình duyệt/thiết bị đang sử dụng. Muốn đồng bộ nhiều thiết bị cần hoàn tất kết nối Supabase.</p>
+    </section>
   </main>
 
   <!-- Load default data first, then app logic -->

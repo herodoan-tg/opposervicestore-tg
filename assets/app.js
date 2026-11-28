@@ -126,18 +126,6 @@ function setupEventListeners() {
     showToast('Đã khôi phục về dữ liệu mặc định ban đầu.');
   });
 
-  // Export current data as JS/JSON for updating GitHub repo
-  document.getElementById('exportJsonBtn').addEventListener('click', () => {
-    const content = 'window.DEFAULT_SHOP_DATA = ' + JSON.stringify(currentData, null, 2) + ';\n';
-    const blob = new Blob([content], { type: 'application/javascript;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'default-data.js';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Đã tải file default-data.js! Bạn có thể thay thế file này vào thư mục data/ trên GitHub.');
-  });
 
   // Transaction filters
   document.getElementById('txSourceFilter').addEventListener('change', renderTransactionsTable);
