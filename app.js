@@ -845,21 +845,18 @@ document.getElementById("btnExportReport").addEventListener("click", () => {
 
   const salesLines = appState.sales
     .map(i => `- ${i.category}: ${i.actual}/${i.target} điểm (${i.target > 0 ? ((i.actual / i.target) * 100).toFixed(0) : 100}%)`)
-    .join("
-");
+    .join("\n");
 
-  const techLines = appState.technicians.slice(0, 2)
+  const techLines = appState.technicians
     .map(t => `- ${t.name} (${t.code}): ${t.newVol} điểm năng suất | TAT 1H: ${t.tat1h}`)
-    .join("
-");
+    .join("\n");
 
   const staffLines = appState.staffContributions
     .map(st => {
       const tot = Number(st.devicePts || 0) + Number(st.accPts || 0) + Number(st.carePts || 0);
       return `- ${st.name}: ${tot.toFixed(1)} điểm (Máy: ${st.devicePts}, PK/IoT: ${st.accPts}, Care/MDCL: ${st.carePts}) | Doanh thu: ${formatVND(st.revenue)}`;
     })
-    .join("
-");
+    .join("\n");
 
   const summary = `📊 BÁO CÁO VẬN HÀNH - ${appState.shopName.toUpperCase()}
 Mã trạm: ${appState.scCode} | Cập nhật: ${appState.lastUpdated}
@@ -869,8 +866,8 @@ Mã trạm: ${appState.scCode} | Cập nhật: ${appState.lastUpdated}
 ${salesLines}
 
 2. ĐÁNH GIÁ KPI SERVICE 2025 (TAT):
-- TAT 1H: ${s.tat1hRate}% | TAT-KS 1H: ${s.tatKs1hRate}% | TAT 24H: ${s.tat24hRate}% | TAT 72H: ${s.tat72hRate}%
-- Tổng phiếu: ${s.volumeTotal} phiếu | NPS: ${s.npsRate}% | Tỷ lệ hủy: ${s.cancelRate}%
+- TAT 1H: ${s.tat1hRate == null ? "N/A" : s.tat1hRate + "%"} | TAT-KS 1H: ${s.tatKs1hRate == null ? "N/A" : s.tatKs1hRate + "%"} | TAT 24H: ${s.tat24hRate == null ? "N/A" : s.tat24hRate + "%"} | TAT 72H: ${s.tat72hRate == null ? "N/A" : s.tat72hRate + "%"}
+- Tổng phiếu: ${s.volumeTotal} phiếu | NPS: ${s.npsRate == null ? "N/A" : s.npsRate + "%"} | Tỷ lệ hủy: ${s.cancelRate == null ? "N/A" : s.cancelRate + "%"}
 
 3. ĐÓNG GÓP DOANH SỐ & ĐIỂM BÁN HÀNG THEO NHÂN SỰ (GCSM SO + CENTER SO):
 ${staffLines}
