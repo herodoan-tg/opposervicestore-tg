@@ -76,7 +76,7 @@ function mgRenderOverviewInsights(){
   const labels={high:'Cần ưu tiên',warn:'Cần theo dõi',good:'Tích cực',info:'Gợi ý quản lý'};
   root.innerHTML=items.map(x=>'<article class="rounded-xl border p-4 '+styles[x.level]+'"><div class="flex items-center justify-between gap-2"><h4 class="font-bold text-sm text-slate-900">'+esc(x.title)+'</h4><span class="shrink-0 text-[10px] font-bold uppercase">'+labels[x.level]+'</span></div><p class="text-xs text-slate-700 mt-2">'+esc(x.body)+'</p><p class="text-xs font-semibold text-slate-800 mt-2">Đề xuất: '+esc(x.action)+'</p></article>').join('');
 }
-function mgRenderAll(){if(!currentData)return;mgApplyTargets();mgPopulateStaff();mgRenderProducts();mgRenderStaff();mgRenderService();mgRenderAlerts();mgTargetEditor();}
+function mgRenderAll(){if(!currentData)return;mgApplyTargets();mgPopulateStaff();mgRenderProducts();mgRenderStaff();mgRenderService();mgRenderAlerts();mgRenderOverviewInsights();mgTargetEditor();}
 function mgWithFilteredRecords(fn){const c=currentData.centerRecords,g=currentData.gcsmRecords;try{currentData.centerRecords=mgFiltered('CENTER');currentData.gcsmRecords=mgFiltered('GCSM');fn();}finally{currentData.centerRecords=c;currentData.gcsmRecords=g;}}
 function mgRefreshFilteredViews(){if(typeof window.renderCharts==='function')window.renderCharts();if(typeof window.renderTopProducts==='function')window.renderTopProducts();if(typeof window.renderTransactionsTable==='function')window.renderTransactionsTable();}
 function mgDate(v){if(v instanceof Date){const d=new Date(v.getTime()-v.getTimezoneOffset()*60000);return d.toISOString().slice(0,16).replace('T',' ');}return String(v||'').slice(0,19);}
