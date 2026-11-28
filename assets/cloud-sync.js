@@ -3,6 +3,8 @@
 const SUPABASE_URL = 'https://tuhykryfzzueygjgokuq.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_vA1YMLm2n0SMsyuO8-wp-Q_KgEbIPXW';
 const CLOUD_STATE_KEY = 'oppo_shop_dashboard_cloud_state_v1';
+const CLOUD_CLIENT_ID = localStorage.getItem('oppo_dashboard_client_id') || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+localStorage.setItem('oppo_dashboard_client_id', CLOUD_CLIENT_ID);
 let cloudClient = null;
 let cloudUser = null;
 let cloudRole = 'member';
@@ -57,9 +59,19 @@ async function cloudLogin(e) {
   cloudSetBusy(true); cloudMessage('');
   const email = document.getElementById('cloudEmail').value.trim();
   const password = document.getElementById('cloudPassword').value;
-  const { error } = await cloudClient.auth.signInWithPassword({ email, password });
+  const { data, error } = await cloudClient.auth.signInWithPassword({ email, password });
   cloudSetBusy(false);
-  if (error) cloudMessage('Không đăng nhập được: ' + error.message, true);
+  if (error) { cloudMessage('Không đăng nhập được: ' + error.message, true); return; }
+  try {
+    cloudUser = data.user;
+    await cloudLoadProfile();
+    await cloudLoadState();
+    document.getElementById('cloudLoginGate').classList.add('hidden');
+    await cloudStartRealtime();
+  } catch (err) {
+    cloudMessage(err.message, true);
+    await cloudClient.auth.signOut();
+  }
 }
 async function cloudLoadProfile() {
   const { data, error } = await cloudClient.from('dashboard_profiles').select('role,display_name').eq('user_id', cloudUser.id).maybeSingle();
@@ -108,7 +120,7 @@ async function cloudSaveData(initializing = false) {
     const rawTargets = localStorage.getItem('oppo_shop_dashboard_targets_v1') || '{}';
     const targets = JSON.parse(rawTargets);
     const { error } = await cloudClient.from('dashboard_state').upsert({
-      id: 'main', data: currentData, targets, updated_by: cloudUser.id, updated_at: new Date().toISOString()
+      id: 'main', data: currentData, targets, updated_by: cloudUser.id, client_id: CLOUD_CLIENT_ID, updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
     if (error) throw error;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
@@ -125,7 +137,7 @@ async function cloudStartRealtime() {
   cloudClient.channel('dashboard-state-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'dashboard_state', filter: 'id=eq.main' }, payload => {
       const row = payload.new;
-      if (!row || row.updated_by === cloudUser.id || !row.data) return;
+      if (!row || row.client_id === CLOUD_CLIENT_ID || !row.data) return;
       currentData = row.data;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
       localStorage.setItem('oppo_shop_dashboard_targets_v1', JSON.stringify(row.targets || {}));
@@ -138,20 +150,6 @@ async function cloudStartRealtime() {
 async function cloudInitialize() {
   cloudUi();
   cloudClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-  cloudClient.auth.onAuthStateChange(async (event, sessionNow) => {
-    if (event === 'SIGNED_OUT') {
-      cloudUser = null;
-      document.getElementById('cloudLoginGate').classList.remove('hidden');
-    }
-    if (event === 'SIGNED_IN' && sessionNow && (!cloudUser || cloudUser.id !== sessionNow.user.id)) {
-      cloudUser = sessionNow.user;
-      try {
-        await cloudLoadProfile(); await cloudLoadState();
-        document.getElementById('cloudLoginGate').classList.add('hidden');
-        await cloudStartRealtime();
-      } catch (err) { cloudMessage(err.message, true); await cloudClient.auth.signOut(); }
-    }
-  });
   const { data: { session } } = await cloudClient.auth.getSession();
   if (!session) return;
   cloudUser = session.user;
