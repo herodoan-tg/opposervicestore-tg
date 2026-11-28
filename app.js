@@ -832,10 +832,12 @@ document.getElementById("btnResetDefault").addEventListener("click", () => {
   if (confirm("Khôi phục toàn bộ dữ liệu & Target về bản gốc của file T11?")) {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("oppo_tg_dashboard_targets_v1");
+    const baselineTargets = appState.baseTargets || {};
     appState = emptyImportedState(null);
-    if (appState.baseTargets) {
-      appState.sales.forEach(item => { item.target = Number(appState.baseTargets[item.category]) || 0; });
-    }
+    appState.baseTargets = baselineTargets;
+    appState.sales.forEach(item => {
+      item.target = Number(baselineTargets[item.category]) || 0;
+    });
     saveState("Đã xóa Target tùy chỉnh");
     renderDashboard();
     targetModal.classList.add("hidden");
