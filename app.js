@@ -14,8 +14,6 @@ const DEFAULT_DATA = {
   ],
   service: {
     volumeTotal: 446,
-    volumeNew: 316.5,
-    techProductivity: 158.25,
     afterSale: 190,
     customerRel: 86,
     saleOrder: 161,
@@ -24,20 +22,46 @@ const DEFAULT_DATA = {
     cancelRate: 4.26,
     tat1hRate: 99.44,
     npsRate: 17.86,
-    diagReq: 279,
-    diagDone: 277,
     klCount: 150,
     dlCount: 100,
     filmTotal: 161,
     filmRate: 36.1
   },
+  // Yêu cầu 4: Chỉ tập trung vào đúng 2 nhân viên kỹ thuật
   technicians: [
     { name: "PHAN CHÍ TRUNG", code: "D70979015", repairNormal: 183, addonNormal: 45.5, soNormal: 70, soFindN: 4, newVol: 302.5, tat1h: "98.63%" },
     { name: "ĐOÀN MINH HÙNG", code: "D24248811", repairNormal: 6, addonNormal: 1.5, soNormal: 7, soFindN: 0, newVol: 14.5, tat1h: "100%" }
+  ],
+  // Yêu cầu 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự
+  staffContributions: [
+    { name: "NGUYỄN THỊ THANH THẢO", role: "Tư vấn bán hàng (PB)", code: "PB0010341", devicePts: 54, accPts: 18, carePts: 42, targetPts: 95 },
+    { name: "TRẦN MINH KHANG", role: "Tư vấn bán hàng (PB)", code: "PB0010342", devicePts: 47, accPts: 14, carePts: 36, targetPts: 90 }
+  ],
+  // Yêu cầu 3: Chi tiết doanh số sản phẩm
+  productDetails: [
+    { sku: "CPH2659", name: "OPPO Reno12 F 5G (8GB/256GB)", category: "PHONE", qty: 38, pointRate: 1.0, revenue: 360620000 },
+    { sku: "CPH2669", name: "OPPO A3x (4GB/128GB)", category: "PHONE", qty: 42, pointRate: 1.0, revenue: 167580000 },
+    { sku: "CPH2639", name: "OPPO Reno12 5G (12GB/256GB)", category: "PHONE", qty: 21, pointRate: 1.0, revenue: 272790000 },
+    { sku: "ETE51", name: "OPPO Enco Buds2 Pro", category: "TAI NGHE", qty: 10, pointRate: 1.0, revenue: 7900000 },
+    { sku: "OP-CASE-R12", name: "Ốp lưng chính hãng OPPO Series", category: "ỐP LƯNG", qty: 12, pointRate: 1.0, revenue: 3480000 },
+    { sku: "OCARE-12M", name: "Gói bảo hành mở rộng / Rơi vỡ Oppo Care", category: "Oppo Care", qty: 24, pointRate: 1.0, revenue: 19200000 },
+    { sku: "MDCL-UV", name: "Miếng dán cường lực / Film PPF chính hãng", category: "MDCL", qty: 54, pointRate: 1.0, revenue: 8100000 },
+    { sku: "PB-VOOC-10K", name: "Sạc dự phòng OPPO SuperVOOC 10.000mAh", category: "Sạc dự phòng", qty: 10, pointRate: 1.0, revenue: 8900000 }
+  ],
+  // Yêu cầu 2: Chi tiết đơn hàng
+  orderDetails: [
+    { id: "SO261127001", time: "27/11/2026 16:45", type: "Bán máy & Care", product: "OPPO Reno12 5G + Oppo Care 12T", staff: "NGUYỄN THỊ THANH THẢO", points: 2, amount: 13790000, status: "Hoàn thành" },
+    { id: "SO261127002", time: "27/11/2026 15:20", type: "Bán phụ kiện", product: "Tai nghe OPPO Enco Buds2 Pro + MDCL", staff: "TRẦN MINH KHANG", points: 2, amount: 940000, status: "Hoàn thành" },
+    { id: "SO261127003", time: "27/11/2026 14:10", type: "Bán máy", product: "OPPO A3x (4GB/128GB)", staff: "NGUYỄN THỊ THANH THẢO", points: 1, amount: 3990000, status: "Hoàn thành" },
+    { id: "SO261127004", time: "27/11/2026 11:35", type: "Dịch vụ SO", product: "Dán màn hình MDCL + Ốp lưng Reno12 F", staff: "PHAN CHÍ TRUNG", points: 2, amount: 440000, status: "Hoàn thành" },
+    { id: "SO261127005", time: "27/11/2026 10:15", type: "Bán phụ kiện", product: "Sạc dự phòng SuperVOOC 10.000mAh", staff: "TRẦN MINH KHANG", points: 1, amount: 890000, status: "Hoàn thành" },
+    { id: "SO261126018", time: "26/11/2026 17:05", type: "Bán máy", product: "OPPO Reno12 F 5G (8GB/256GB)", staff: "TRẦN MINH KHANG", points: 1, amount: 9490000, status: "Hoàn thành" },
+    { id: "SO261126014", time: "26/11/2026 15:50", type: "Dịch vụ SO", product: "Gói Oppo Care+ Rơi vỡ màn hình", staff: "NGUYỄN THỊ THANH THẢO", points: 1, amount: 800000, status: "Đang xử lý" },
+    { id: "SO261126009", time: "26/11/2026 09:30", type: "Bán phụ kiện", product: "Miếng dán cường lực chống nhìn trộm", staff: "ĐOÀN MINH HÙNG", points: 0, amount: 200000, status: "Đã hủy" }
   ]
 };
 
-const STORAGE_KEY = "oppo_tg_dashboard_state_v1";
+const STORAGE_KEY = "oppo_tg_dashboard_state_v2";
 let appState = loadState();
 let salesChartInstance = null;
 let serviceMixChartInstance = null;
@@ -54,6 +78,10 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+}
+
+function formatVND(val) {
+  return Number(val || 0).toLocaleString("vi-VN") + " đ";
 }
 
 function renderDashboard() {
@@ -73,13 +101,10 @@ function renderDashboard() {
   document.getElementById("diffTotalScore").textContent = diffTotal >= 0 ? `+${diffTotal}` : diffTotal;
 
   const s = appState.service;
-  document.getElementById("valServiceVol").textContent = s.volumeNew;
   document.getElementById("valTotalTickets").textContent = s.volumeTotal;
-  document.getElementById("valTechProd").textContent = s.techProductivity;
+  document.getElementById("lblChartTickets").textContent = s.volumeTotal;
   document.getElementById("valTat1h").textContent = `${s.tat1hRate}%`;
   document.getElementById("valNps").textContent = `${s.npsRate}%`;
-  document.getElementById("valDiagDone").textContent = s.diagDone;
-  document.getElementById("valDiagReq").textContent = s.diagReq;
   document.getElementById("valCancelRate").textContent = `${s.cancelRate}%`;
   document.getElementById("valKL").textContent = `${s.klCount} (${((s.klCount / (s.klCount + s.dlCount || 1)) * 100).toFixed(0)}%)`;
   document.getElementById("valDL").textContent = `${s.dlCount} (${((s.dlCount / (s.klCount + s.dlCount || 1)) * 100).toFixed(0)}%)`;
@@ -87,6 +112,10 @@ function renderDashboard() {
 
   renderSalesTable();
   renderTechTable();
+  renderStaffContributionTable();
+  populateProductFilter();
+  renderProductDetailTable();
+  renderOrderDetailTable();
   renderCharts();
 }
 
@@ -120,10 +149,13 @@ function renderSalesTable() {
   document.getElementById("salesSummaryText").textContent = `${achievedCount}/${appState.sales.length} nhóm đạt & vượt Target`;
 }
 
+// Yêu cầu 4: Chỉ hiển thị tối đa 2 nhân viên kỹ thuật
 function renderTechTable() {
   const tbody = document.querySelector("#techTable tbody");
   tbody.innerHTML = "";
-  appState.technicians.forEach(t => {
+  const twoTechs = appState.technicians.slice(0, 2);
+
+  twoTechs.forEach(t => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${t.name}</strong></td>
@@ -137,6 +169,142 @@ function renderTechTable() {
     tbody.appendChild(tr);
   });
 }
+
+// Yêu cầu 5: Bảng Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự
+function renderStaffContributionTable() {
+  const tbody = document.querySelector("#staffContributionTable tbody");
+  tbody.innerHTML = "";
+
+  const staffList = appState.staffContributions.map(st => {
+    const total = Number(st.devicePts || 0) + Number(st.accPts || 0) + Number(st.carePts || 0);
+    return { ...st, total };
+  });
+
+  const grandTotal = staffList.reduce((acc, s) => acc + s.total, 0);
+  document.getElementById("staffTotalBadge").textContent = `Tổng điểm quy đổi: ${grandTotal} điểm`;
+
+  staffList.forEach(st => {
+    const sharePct = grandTotal > 0 ? ((st.total / grandTotal) * 100).toFixed(1) : 0;
+    const kpiPct = st.targetPts > 0 ? ((st.total / st.targetPts) * 100).toFixed(0) : 100;
+
+    let ratingBadge = `<span class="badge">Hoàn thành (${kpiPct}% KPI)</span>`;
+    if (kpiPct >= 115) ratingBadge = `<span class="badge">Xuất sắc (${kpiPct}% KPI)</span>`;
+    else if (kpiPct < 90) ratingBadge = `<span class="badge badge-warn">Cần bám sát (${kpiPct}% KPI)</span>`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${st.name}</strong></td>
+      <td>${st.role} <br><small style="color:var(--text-muted)">${st.code}</small></td>
+      <td class="num">${st.devicePts}</td>
+      <td class="num">${st.accPts}</td>
+      <td class="num">${st.carePts}</td>
+      <td class="num"><strong style="color:#10b981;font-size:0.95rem">${st.total}</strong></td>
+      <td class="num">
+        <div class="contrib-bar-wrap">
+          <span>${sharePct}%</span>
+          <div class="contrib-bar"><div class="contrib-bar-fill" style="width:${sharePct}%"></div></div>
+        </div>
+      </td>
+      <td>${ratingBadge}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Yêu cầu 3: Chi tiết doanh số sản phẩm
+function populateProductFilter() {
+  const select = document.getElementById("filterProductCat");
+  const currentVal = select.value;
+  const cats = [...new Set(appState.productDetails.map(p => p.category))];
+  select.innerHTML = `<option value="ALL">Tất cả nhóm hàng (${cats.length})</option>`;
+  cats.forEach(c => {
+    select.innerHTML += `<option value="${c}">${c}</option>`;
+  });
+  if (cats.includes(currentVal)) select.value = currentVal;
+}
+
+function renderProductDetailTable() {
+  const tbody = document.querySelector("#productDetailTable tbody");
+  const filterCat = document.getElementById("filterProductCat").value;
+  tbody.innerHTML = "";
+
+  const filtered = filterCat === "ALL"
+    ? appState.productDetails
+    : appState.productDetails.filter(p => p.category === filterCat);
+
+  let sumQty = 0, sumPts = 0, sumRev = 0;
+
+  filtered.forEach(p => {
+    const pts = Number((p.qty * p.pointRate).toFixed(1));
+    sumQty += Number(p.qty);
+    sumPts += pts;
+    sumRev += Number(p.revenue);
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><code>${p.sku}</code></td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-info">${p.category}</span></td>
+      <td class="num">${p.qty}</td>
+      <td class="num">x${p.pointRate}</td>
+      <td class="num"><strong style="color:#10b981">${pts}</strong></td>
+      <td class="num">${formatVND(p.revenue)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const tfoot = document.createElement("tr");
+  tfoot.style.background = "rgba(15, 23, 42, 0.65)";
+  tfoot.innerHTML = `
+    <td colspan="3"><strong>TỔNG CỘNG (${filtered.length} dòng sản phẩm)</strong></td>
+    <td class="num"><strong>${sumQty}</strong></td>
+    <td class="num">-</td>
+    <td class="num"><strong style="color:#10b981">${sumPts}</strong></td>
+    <td class="num"><strong>${formatVND(sumRev)}</strong></td>
+  `;
+  tbody.appendChild(tfoot);
+}
+
+// Yêu cầu 2: Chi tiết đơn hàng
+function renderOrderDetailTable() {
+  const tbody = document.querySelector("#orderDetailTable tbody");
+  const keyword = document.getElementById("searchOrderInput").value.trim().toLowerCase();
+  const statusFilter = document.getElementById("filterOrderStatus").value;
+  tbody.innerHTML = "";
+
+  const filtered = appState.orderDetails.filter(o => {
+    const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
+    const matchKey = !keyword ||
+      o.id.toLowerCase().includes(keyword) ||
+      o.product.toLowerCase().includes(keyword) ||
+      o.staff.toLowerCase().includes(keyword) ||
+      o.type.toLowerCase().includes(keyword);
+    return matchStatus && matchKey;
+  });
+
+  filtered.forEach(o => {
+    let badgeCls = "badge";
+    if (o.status === "Đang xử lý") badgeCls = "badge badge-warn";
+    else if (o.status === "Đã hủy") badgeCls = "badge badge-danger";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><code>${o.id}</code></td>
+      <td><small>${o.time}</small></td>
+      <td>${o.type}</td>
+      <td><strong>${o.product}</strong></td>
+      <td>${o.staff}</td>
+      <td class="num"><strong>${o.points}</strong></td>
+      <td class="num">${formatVND(o.amount)}</td>
+      <td><span class="${badgeCls}">${o.status}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("filterProductCat").addEventListener("change", renderProductDetailTable);
+document.getElementById("searchOrderInput").addEventListener("input", renderOrderDetailTable);
+document.getElementById("filterOrderStatus").addEventListener("change", renderOrderDetailTable);
 
 function renderCharts() {
   const ctxSales = document.getElementById("salesChart").getContext("2d");
@@ -198,6 +366,7 @@ function renderCharts() {
   });
 }
 
+// Upload Excel (.xlsx) & bóc tách tự động
 document.getElementById("excelUpload").addEventListener("change", function (e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -231,6 +400,7 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
           }));
         }
 
+        // Lấy đúng 2 KTV từ sheet Tổng hợp
         const techs = [];
         for (let r = 11; r < rows.length; r++) {
           if (rows[r] && rows[r][2] && rows[r][3]) {
@@ -245,6 +415,7 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
               tat1h: "99%+"
             });
           }
+          if (techs.length === 2) break;
         }
         if (techs.length > 0) appState.technicians = techs;
       }
@@ -254,8 +425,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         const d = kpiRows[3];
         if (d) {
           appState.scCode = d[1] || appState.scCode;
-          appState.service.volumeNew = Number(d[6]) || appState.service.volumeNew;
-          appState.service.techProductivity = Number(d[8]) || appState.service.techProductivity;
           appState.service.volumeTotal = Number(d[9]) || appState.service.volumeTotal;
           appState.service.cancelCount = Number(d[19]) || appState.service.cancelCount;
           appState.service.cancelRate = Number(((Number(d[20]) || 0) * 100).toFixed(2));
@@ -267,8 +436,52 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
           appState.service.simpleService = Number(d[34]) || appState.service.simpleService;
           appState.service.tat1hRate = Number(((Number(d[60]) || 0) * 100).toFixed(2));
           appState.service.npsRate = Number(((Number(d[74]) || 0) * 100).toFixed(2));
-          appState.service.diagReq = Number(d[82]) || appState.service.diagReq;
-          appState.service.diagDone = Number(d[83]) || appState.service.diagDone;
+        }
+      }
+
+      // Hỗ trợ đọc thêm sheet tùy chọn nếu file Excel có sẵn: "DonHang", "SanPham", "NhanSu"
+      if (workbook.Sheets["SanPham"]) {
+        const spRows = XLSX.utils.sheet_to_json(workbook.Sheets["SanPham"]);
+        if (spRows.length > 0) {
+          appState.productDetails = spRows.map(r => ({
+            sku: r["SKU"] || r["Mã SP"] || "N/A",
+            name: r["Tên sản phẩm"] || r["Product"] || "",
+            category: r["Nhóm hàng"] || r["Category"] || "Khác",
+            qty: Number(r["Số lượng"] || r["Qty"] || 0),
+            pointRate: Number(r["Hệ số"] || r["Rate"] || 1),
+            revenue: Number(r["Doanh thu"] || r["Revenue"] || 0)
+          }));
+        }
+      }
+
+      if (workbook.Sheets["DonHang"]) {
+        const dhRows = XLSX.utils.sheet_to_json(workbook.Sheets["DonHang"]);
+        if (dhRows.length > 0) {
+          appState.orderDetails = dhRows.map(r => ({
+            id: r["Mã đơn"] || r["Order ID"] || "",
+            time: r["Ngày giờ"] || r["Time"] || "",
+            type: r["Loại giao dịch"] || r["Type"] || "Bán hàng",
+            product: r["Sản phẩm"] || r["Product"] || "",
+            staff: r["Nhân viên"] || r["Staff"] || "",
+            points: Number(r["Điểm"] || r["Points"] || 0),
+            amount: Number(r["Giá trị"] || r["Amount"] || 0),
+            status: r["Trạng thái"] || r["Status"] || "Hoàn thành"
+          }));
+        }
+      }
+
+      if (workbook.Sheets["NhanSu"]) {
+        const nsRows = XLSX.utils.sheet_to_json(workbook.Sheets["NhanSu"]);
+        if (nsRows.length > 0) {
+          appState.staffContributions = nsRows.map(r => ({
+            name: r["Họ tên"] || r["Name"] || "",
+            role: r["Chức danh"] || r["Role"] || "Tư vấn bán hàng",
+            code: r["Mã NV"] || r["Code"] || "",
+            devicePts: Number(r["Điểm máy"] || 0),
+            accPts: Number(r["Điểm phụ kiện"] || 0),
+            carePts: Number(r["Điểm Care/MDCL"] || 0),
+            targetPts: Number(r["Target"] || 90)
+          }));
         }
       }
 
@@ -279,12 +492,13 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
       alert("✅ Đã cập nhật & lưu trữ dữ liệu từ file: " + file.name);
     } catch (err) {
       console.error(err);
-      alert("❌ Lỗi đọc file Excel. Vui lòng đảm bảo đúng định dạng file báo cáo OPPO!");
+      alert("❌ Lỗi đọc file Excel. Vui lòng kiểm tra lại định dạng file!");
     }
   };
   reader.readAsArrayBuffer(file);
 });
 
+// Modal Target
 const targetModal = document.getElementById("targetModal");
 document.getElementById("btnEditTarget").addEventListener("click", () => {
   const grid = document.getElementById("targetInputsGrid");
@@ -321,6 +535,7 @@ document.getElementById("btnResetDefault").addEventListener("click", () => {
   }
 });
 
+// Modal Export Báo Cáo
 const reportModal = document.getElementById("reportModal");
 document.getElementById("btnExportReport").addEventListener("click", () => {
   const totalTarget = appState.sales.reduce((s, i) => s + i.target, 0);
@@ -332,8 +547,15 @@ document.getElementById("btnExportReport").addEventListener("click", () => {
     .map(i => `- ${i.category}: ${i.actual}/${i.target} điểm (${i.target > 0 ? ((i.actual / i.target) * 100).toFixed(0) : 100}%)`)
     .join("\n");
 
-  const techLines = appState.technicians
-    .map(t => `- ${t.name} (${t.code}): ${t.newVol} điểm năng suất`)
+  const techLines = appState.technicians.slice(0, 2)
+    .map(t => `- ${t.name} (${t.code}): ${t.newVol} điểm năng suất | TAT 1H: ${t.tat1h}`)
+    .join("\n");
+
+  const staffLines = appState.staffContributions
+    .map(st => {
+      const tot = st.devicePts + st.accPts + st.carePts;
+      return `- ${st.name}: ${tot} điểm (Máy: ${st.devicePts}, PK: ${st.accPts}, Care/MDCL: ${st.carePts})`;
+    })
     .join("\n");
 
   const summary = `📊 BÁO CÁO VẬN HÀNH - ${appState.shopName.toUpperCase()}
@@ -343,13 +565,12 @@ Mã trạm: ${appState.scCode} | Nguồn: ${appState.lastUpdated}
 - Tổng điểm: ${totalActual} / ${totalTarget} điểm (Đạt ${pct}%)
 ${salesLines}
 
-2. CHỈ SỐ DỊCH VỤ & KPI TRẠM (SERVICE):
-- Tổng Volume: ${s.volumeTotal} phiếu | Volume năng suất mới: ${s.volumeNew} điểm
-- Năng suất bình quân/KTV: ${s.techProductivity} điểm
-- TAT 1H sửa chữa: ${s.tat1hRate}% | Chẩn đoán sau SC: ${s.diagDone}/${s.diagReq} ca
-- Tỷ lệ Khách lẻ / Đại lý: ${s.klCount} KL / ${s.dlCount} ĐL | Dán MH: ${s.filmTotal} phiếu
+2. ĐÓNG GÓP DOANH SỐ & ĐIỂM BÁN HÀNG THEO NHÂN SỰ:
+${staffLines}
 
-3. NĂNG SUẤT KỸ THUẬT VIÊN:
+3. CHỈ SỐ DỊCH VỤ & NĂNG SUẤT 2 KỸ THUẬT VIÊN:
+- Tổng phiếu tiếp nhận: ${s.volumeTotal} phiếu | TAT 1H: ${s.tat1hRate}% | NPS: ${s.npsRate}%
+- Tỷ lệ Khách lẻ / Đại lý: ${s.klCount} KL / ${s.dlCount} ĐL | Dán MH: ${s.filmTotal} phiếu
 ${techLines}
 --------------------------------------------------`;
 
