@@ -62,11 +62,13 @@ create table if not exists public.dashboard_state (
   data jsonb not null,
   targets jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now(),
-  updated_by uuid references auth.users(id)
+  updated_by uuid references auth.users(id),
+  client_id text
 );
 
 alter table public.dashboard_profiles enable row level security;
 alter table public.dashboard_state enable row level security;
+alter table public.dashboard_state add column if not exists client_id text;
 
 drop policy if exists "Users can read own profile or admins read all" on public.dashboard_profiles;
 create policy "Users can read own profile or admins read all"
