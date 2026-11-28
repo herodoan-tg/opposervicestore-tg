@@ -123,6 +123,7 @@ function setupEventListeners() {
     currentData = JSON.parse(JSON.stringify(window.DEFAULT_SHOP_DATA));
     updateStorageBadge(false);
     renderAll();
+    if (typeof window.cloudSaveData === 'function') window.cloudSaveData();
     showToast('Đã khôi phục về dữ liệu mặc định ban đầu.');
   });
 
@@ -163,6 +164,7 @@ function handleExcelFile(file) {
       }
 
       renderAll();
+      if (typeof window.cloudSaveData === 'function') window.cloudSaveData();
       showToast(`Đã cập nhật & lưu trữ dữ liệu từ file: ${file.name}`);
     } catch (err) {
       console.error(err);
