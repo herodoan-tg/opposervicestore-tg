@@ -76,17 +76,33 @@ function mgExportDailyReport(){
   if(typeof showToast==='function')showToast('Đã xuất báo cáo ngày '+date+'.');
 }
 function mgExportExcel(){
-const center=mgFiltered('CENTER').filter(r=>String(r.export_type||'').toLowerCase().includes('bán')&&String(r.status||'').toLowerCase().includes('hiệu lực')),gcsm=mgFiltered('GCSM');
-const sum=(a,k)=>a.reduce((s,r)=>s+(Number(r[k])||0),0),cp=sum(center,'points'),gp=sum(gcsm,'points'),cr=sum(center.map(r=>({v:r.receivable||r.retail_revenue})),'v'),gr=sum(gcsm,'retail_price'),cq=sum(center,'qty'),gq=sum(gcsm,'qty');
-const from=document.getElementById('dashFrom').value,to=document.getElementById('dashTo').value,staff=document.getElementById('dashStaff').value;
-const period=from||to?(from||'Đầu kỳ')+' đến '+(to||'Hiện tại'):'Toàn bộ dữ liệu';
-const lines=['📊 BÁO CÁO TỔNG HỢP – OPPO EXPERIENCE & SERVICE STORE TIỀN GIANG','📅 Kỳ: '+period,'👤 Nhân viên: '+(staff==='ALL'?'Toàn cửa hàng':staff),'','🎯 TIẾN ĐỘ KPI',...currentData.categories.filter(x=>x.key!=='TOTAL').map(x=>'• '+x.name+': '+mgFmt(x.actual)+' / '+mgFmt(x.target)+' điểm ('+(x.target?mgPct(x.actual/x.target):'Chưa đặt target')+')'),'','💰 DOANH SỐ & ĐIỂM','• Center SO: '+center.length+' đơn | '+mgFmt(cq)+' sản phẩm | '+mgMoney(cr)+' | '+mgFmt(cp)+' điểm','• GCSM SO: '+gcsm.length+' đơn | '+mgFmt(gq)+' sản phẩm | '+mgMoney(gr)+' | '+mgFmt(gp)+' điểm','• TỔNG: '+(center.length+gcsm.length)+' đơn | '+mgFmt(cq+gq)+' sản phẩm | '+mgMoney(cr+gr)+' | '+mgFmt(cp+gp)+' điểm','','🏆 TOP NHÂN VIÊN THEO ĐIỂM'];
-const sm=new Map();const add=(n,p,v)=>{n=mgResolveStaff(n);const k=mgNorm(n),x=sm.get(k)||{n,p:0,v:0};x.p+=Number(p)||0;x.v+=Number(v)||0;sm.set(k,x);};
-center.forEach(r=>add(r.kpi_staff||r.creator,r.points,r.receivable||r.retail_revenue));gcsm.forEach(r=>add(r.creator,r.points,r.retail_price));
-lines.push(...[...sm.values()].sort((a,b)=>b.p-a.p).slice(0,5).map((x,i)=>(i+1)+'. '+x.n+' – '+mgFmt(x.p)+' điểm – '+mgMoney(x.v)));
-const pm=new Map();[...center,...gcsm].forEach(r=>{const n=r.model||r.product;if(!n)return;const x=pm.get(n)||{q:0,p:0};x.q+=Number(r.qty)||0;x.p+=Number(r.points)||0;pm.set(n,x);});
-lines.push('','📦 TOP SẢN PHẨ THEO ĐIỂM',...[...pm.entries()].sort((a,b)=>b[1].p-a[1].p).slice(0,5).map((x,i)=>(i+1)+'. '+x[0]+' – '+mgFmt(x[1].q)+' sản phẩm – '+mgFmt(x[1].p)+' điểm'),'','🕒 Cập nhật: '+new Date().toLocaleString('vi-VN'),'Nguồn: dữ liệu Center SO & GCSM SO trên dashboard.');
-const report=lines.join('\n'),fallback=()=>{const t=document.createElement('textarea');t.value=report;document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();if(!ok)alert(report);else showToast('Đã copy báo cáo. Bro dán vào Zalo gửi sếp nhé.');};
-if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(report).then(()=>showToast('Đã copy báo cáo. Bro dán vào Zalo gửi sếp nhé.')).catch(fallback);else fallback();
+  try{
+    const center=mgFiltered('CENTER').filter(r=>String(r.export_type||'').toLowerCase().includes('bán')&&String(r.status||'').toLowerCase().includes('hiệu lực'));
+    const gcsm=mgFiltered('GCSM');
+    const sum=(a,k)=>a.reduce((s,r)=>s+(Number(r[k])||0),0);
+    const cp=sum(center,'points'),gp=sum(gcsm,'points');
+    const cr=sum(center.map(r=>({v:r.receivable||r.retail_revenue})),'v'),gr=sum(gcsm,'retail_price');
+    const cq=sum(center,'qty'),gq=sum(gcsm,'qty');
+    const from=document.getElementById('dashFrom')?.value||'',to=document.getElementById('dashTo')?.value||'',staff=document.getElementById('dashStaff')?.value||'ALL';
+    const period=from||to?(from||'Đầu kỳ')+' đến '+(to||'Hiện tại'):'Toàn bộ dữ liệu';
+    const lines=['📊 BÁO CÁO TỔNG HỢP – OPPO EXPERIENCE & SERVICE STORE TIỀN GIANG','📅 Kỳ: '+period,'👤 Nhân viên: '+(staff==='ALL'?'Toàn cửa hàng':staff),'','🎯 TIẾN ĐỘ KPI',...currentData.categories.filter(x=>x.key!=='TOTAL').map(x=>'• '+x.name+': '+mgFmt(x.actual)+' / '+mgFmt(x.target)+' điểm ('+(x.target?mgPct(x.actual/x.target):'Chưa đặt target')+')'),'','💰 DOANH SỐ & ĐIỂM','• Center SO: '+center.length+' đơn | '+mgFmt(cq)+' sản phẩm | '+mgMoney(cr)+' | '+mgFmt(cp)+' điểm','• GCSM SO: '+gcsm.length+' đơn | '+mgFmt(gq)+' sản phẩm | '+mgMoney(gr)+' | '+mgFmt(gp)+' điểm','• TỔNG: '+(center.length+gcsm.length)+' đơn | '+mgFmt(cq+gq)+' sản phẩm | '+mgMoney(cr+gr)+' | '+mgFmt(cp+gp)+' điểm','','🏆 TOP NHÂN VIÊN THEO ĐIỂM'];
+    const sm=new Map();
+    const add=(n,p,v)=>{n=mgResolveStaff(n);const k=mgNorm(n),x=sm.get(k)||{n,p:0,v:0};x.p+=Number(p)||0;x.v+=Number(v)||0;sm.set(k,x);};
+    center.forEach(r=>add(r.kpi_staff||r.creator,r.points,r.receivable||r.retail_revenue));
+    gcsm.forEach(r=>add(r.creator,r.points,r.retail_price));
+    lines.push(...[...sm.values()].sort((a,b)=>b.p-a.p).slice(0,5).map((x,i)=>(i+1)+'. '+x.n+' – '+mgFmt(x.p)+' điểm – '+mgMoney(x.v)));
+    const pm=new Map();
+    [...center,...gcsm].forEach(r=>{const n=r.model||r.product;if(!n)return;const x=pm.get(n)||{q:0,p:0};x.q+=Number(r.qty)||0;x.p+=Number(r.points)||0;pm.set(n,x);});
+    lines.push('','📦 TOP SẢN PHẨM THEO ĐIỂM',...[...pm.entries()].sort((a,b)=>b[1].p-a[1].p).slice(0,5).map((x,i)=>(i+1)+'. '+x[0]+' – '+mgFmt(x[1].q)+' sản phẩm – '+mgFmt(x[1].p)+' điểm'),'','🕒 Cập nhật: '+new Date().toLocaleString('vi-VN'),'Nguồn: dữ liệu Center SO & GCSM SO trên dashboard.');
+    const report=lines.join('\n');
+    const notify=msg=>{if(typeof showToast==='function')showToast(msg);else alert(msg);};
+    const manualCopy=()=>{const t=document.createElement('textarea');t.value=report;t.setAttribute('readonly','');t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.focus();t.select();t.setSelectionRange(0,t.value.length);let ok=false;try{ok=document.execCommand('copy');}catch(e){}t.remove();if(ok)notify('Đã copy báo cáo. Bro dán vào Zalo gửi sếp nhé.');else{prompt('Trình duyệt không cho phép tự copy. Bro hãy copy nội dung bên dưới:',report);}};
+    if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
+      navigator.clipboard.writeText(report).then(()=>notify('Đã copy báo cáo. Bro dán vào Zalo gửi sếp nhé.')).catch(manualCopy);
+    }else manualCopy();
+  }catch(err){
+    console.error('Xuất báo cáo tổng hợp thất bại:',err);
+    alert('Không thể tạo báo cáo: '+(err&&err.message?err.message:String(err)));
+  }
 }
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('mgTargetMonth').value=new Date().toISOString().slice(0,7);document.getElementById('mgDailyDate').value=new Date().toISOString().slice(0,10);const base=window.renderAll,baseCharts=window.renderCharts,baseProducts=window.renderTopProducts,baseTransactions=window.renderTransactionsTable;if(typeof baseCharts==='function')window.renderCharts=function(){mgWithFilteredRecords(baseCharts);};if(typeof baseProducts==='function')window.renderTopProducts=function(){mgWithFilteredRecords(baseProducts);};if(typeof baseTransactions==='function')window.renderTransactionsTable=function(){mgWithFilteredRecords(baseTransactions);};if(typeof base==='function')window.renderAll=function(){mgApplyTargets();base();mgRenderAll();};['dashFrom','dashTo','dashStaff'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{mgRenderAll();mgRefreshFilteredViews();}));document.getElementById('dashClearFilters').addEventListener('click',()=>{['dashFrom','dashTo'].forEach(id=>document.getElementById(id).value='');document.getElementById('dashStaff').value='ALL';mgRenderAll();});document.getElementById('mgCenterFile').addEventListener('change',e=>{if(e.target.files[0])mgUpload(e.target.files[0],'CENTER');e.target.value='';});document.getElementById('mgGcsmFile').addEventListener('change',e=>{if(e.target.files[0])mgUpload(e.target.files[0],'GCSM');e.target.value='';});document.getElementById('mgTargetMonth').addEventListener('change',()=>{mgApplyTargets();mgTargetEditor();});document.getElementById('mgSaveTargets').addEventListener('click',mgSaveTargets);document.getElementById('mgResetTargets').addEventListener('click',mgResetTargets);document.getElementById('mgExportExcel').addEventListener('click',mgExportExcel);document.getElementById('mgExportDaily').addEventListener('click',mgExportDailyReport);mgRenderAll();});
