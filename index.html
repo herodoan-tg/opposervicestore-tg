@@ -105,6 +105,9 @@
         <button data-tab="transactions" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap flex items-center gap-1.5">
           <i data-lucide="table" class="w-4 h-4"></i> Chi Tiết Đơn Hàng
         </button>
+
+        <button data-tab="service" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 whitespace-nowrap">Vận Hành Dịch Vụ</button>
+        <button data-tab="management" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 whitespace-nowrap">Quản Lý Dữ Liệu</button>
       </nav>
     </div>
   </header>
@@ -137,6 +140,13 @@
       </div>
     </div>
 
+
+    <section class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-end gap-3">
+      <div><label class="block text-xs font-semibold mb-1" for="dashFrom">Từ ngày</label><input id="dashFrom" type="date" class="border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-xs font-semibold mb-1" for="dashTo">Đến ngày</label><input id="dashTo" type="date" class="border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-xs font-semibold mb-1" for="dashStaff">Nhân viên</label><select id="dashStaff" class="border rounded-lg px-3 py-2 text-sm"><option value="ALL">Tất cả nhân viên</option></select></div>
+      <button id="dashClearFilters" class="border rounded-lg px-3 py-2 text-sm">Xóa bộ lọc</button><p class="text-xs text-slate-500">Bộ lọc áp dụng cho báo cáo phân tích từ Center SO và GCSM SO.</p>
+    </section>
     <!-- TAB 1: OVERVIEW KPI -->
     <section id="tab-overview" class="tab-content space-y-6">
       <!-- Top 4 Hero KPI Cards -->
@@ -257,6 +267,8 @@
       </div>
     </section>
 
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Chi Tiết Doanh Số Theo Sản Phẩm</h3><p class="text-xs text-slate-500 mb-3">Tổng hợp hai nguồn, có lọc ngày và nhân viên</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Sản phẩm / Model</th><th class="p-2">Nhóm</th><th class="p-2 text-right">SL</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Điểm</th></tr></thead><tbody id="mgProductBody" class="text-xs divide-y"></tbody></table></div></div>
     <!-- TAB 3: STAFF PRODUCTIVITY -->
     <section id="tab-staff" class="tab-content hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -303,6 +315,8 @@
       </div>
     </section>
 
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-1">Đánh Giá Đóng Góp Doanh Số & Điểm Theo Nhân Sự</h3><p class="text-xs text-slate-500 mb-3">Đối chiếu nhân viên giữa Center SO và GCSM SO</p><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-50 text-xs"><tr><th class="p-2">Nhân viên</th><th class="p-2 text-right">Center SO</th><th class="p-2 text-right">GCSM SO</th><th class="p-2 text-right">Tổng điểm</th><th class="p-2 text-right">Doanh thu</th><th class="p-2 text-right">Tỷ trọng</th></tr></thead><tbody id="mgStaffBody" class="text-xs divide-y"></tbody></table></div></div>
     <!-- TAB 4: TRANSACTIONS EXPLORER -->
     <section id="tab-transactions" class="tab-content hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
@@ -349,10 +363,16 @@
       </div>
     </section>
 
+
+    <section id="tab-service" class="tab-content hidden space-y-6"><div id="mgServiceCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div><div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm"><h3 class="font-bold mb-3">Năng Suất Kỹ Thuật Viên</h3><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50"><tr><th class="p-2">Kỹ thuật viên</th><th class="p-2 text-right">Volume</th><th class="p-2 text-right">Sửa chữa</th><th class="p-2 text-right">DV cộng thêm</th><th class="p-2 text-right">SO thường</th></tr></thead><tbody id="mgServiceStaff" class="divide-y"></tbody></table></div></div></section>
+    <section id="tab-management" class="tab-content hidden space-y-6"><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3"><h3 class="font-bold">Upload Dữ Liệu Theo Nguồn</h3><p class="text-xs text-slate-500">Mỗi lần upload sẽ thay thế dữ liệu của nguồn tương ứng, nguồn còn lại được giữ nguyên.</p><label class="block text-sm font-semibold">Center SO<input id="mgCenterFile" type="file" accept=".xlsx,.xls" class="block w-full mt-2 text-sm"></label><p id="mgCenterStatus" class="text-xs text-slate-500">Chưa cập nhật riêng</p><hr><label class="block text-sm font-semibold">GCSM SO<input id="mgGcsmFile" type="file" accept=".xlsx,.xls" class="block w-full mt-2 text-sm"></label><p id="mgGcsmStatus" class="text-xs text-slate-500">Chưa cập nhật riêng</p><p class="text-xs bg-amber-50 text-amber-800 rounded-lg p-3">Dữ liệu chỉ lưu trên trình duyệt/thiết bị hiện tại, không tự đồng bộ sang thiết bị khác.</p></div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3"><h3 class="font-bold">Điều Chỉnh Target</h3><label class="block text-xs font-semibold">Tháng áp dụng<input id="mgTargetMonth" type="month" class="block border rounded-lg px-3 py-2 mt-1 text-sm"></label><div id="mgTargetEditor" class="space-y-2"></div><div class="flex gap-2"><button id="mgSaveTargets" class="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold">Lưu Target</button><button id="mgResetTargets" class="rounded-lg border px-4 py-2 text-sm">Khôi phục gốc</button></div></div></div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-5"><h3 class="font-bold mb-2">Xuất Báo Cáo</h3><p class="text-xs text-slate-500 mb-3">Excel gồm KPI, sản phẩm, nhân sự và giao dịch theo bộ lọc.</p><button id="mgExportExcel" class="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm font-semibold">Xuất báo cáo Excel</button><button id="mgExportJson" class="ml-2 rounded-lg border px-4 py-2 text-sm">Sao lưu JSON</button></div><div class="bg-white rounded-2xl border border-slate-200 p-5"><h3 class="font-bold mb-3">Cảnh Báo Quản Lý</h3><div id="mgAlerts" class="grid md:grid-cols-2 gap-3"></div></div></section>
   </main>
 
   <!-- Load default data first, then app logic -->
   <script src="data/default-data.js"></script>
   <script src="assets/app.js"></script>
+  <script src="assets/management.js"></script>
 </body>
 </html>
