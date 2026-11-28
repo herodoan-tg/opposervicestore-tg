@@ -148,6 +148,7 @@ function setupEventListeners() {
 
 // Parse Uploaded Excel File using SheetJS
 function handleExcelFile(file) {
+  if (typeof cloudRole !== 'undefined' && cloudRole !== 'admin') { showToast('Tài khoản nhân viên chỉ được xem dữ liệu. Vui lòng liên hệ quản trị viên để upload.', 'error'); return; }
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
