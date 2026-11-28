@@ -52,18 +52,33 @@ function mgFindHeader(sheet,src){
 }
 function mgGet(row,headers,aliases){const normalized=headers.map(mgHeaderKey);for(const alias of aliases){const a=mgHeaderKey(alias),i=normalized.findIndex(h=>h===a||h.includes(a));if(i>=0){const key=headers[i];if(row[key]!==undefined&&row[key]!==null&&String(row[key]).trim()!=='')return row[key];}}return null;}
 function mgOrderValue(row,headers,src){
+  // CENTER source uses two levels: "Đơn hàng tổng" (parent order)
+  // and "Đơn hàng chi tiết" (line/detail order). Prefer the detail ID,
+  // then fall back to the parent ID when the detail cell is empty.
   const aliases=src==='CENTER'
     ? ['Đơn hàng chi tiết','Đơn hàng tổng','Mã đơn hàng','Mã đơn','Số đơn hàng','Số đơn','Mã giao dịch','Mã đơn bán hàng','Order No','Order number','Order ID','Order Code','Order details','Sales order']
     : ['Sales order No.','Sales order number','Sales order No','SO number','Order ID','Order Code','Mã đơn hàng','Mã đơn','Số đơn hàng','Mã giao dịch'];
-  const value=mgGet(row,headers,aliases);
-  if(value!==null&&String(value).trim())return value;
-  const keys=headers.map(mgHeaderKey);
-  const i=keys.findIndex(h=>
-    ['ma','so','order'].some(t=>h.includes(t)) &&
-    ['don','order','giao dich'].some(t=>h.includes(t)) &&
-    !h.includes('ngay')
+  const normalized=new Map();
+  for(const h of headers){
+    const key=mgHeaderKey(h);
+    if(key && row[h]!==undefined && row[h]!==null && String(row[h]).trim()!=='') normalized.set(key,row[h]);
+  }
+  // Exact normalized header lookup avoids relying on partial matches when
+  // the exported Excel headers contain extra spaces or punctuation.
+  for(const alias of aliases){
+    const value=normalized.get(mgHeaderKey(alias));
+    if(value!==undefined && String(value).trim()!=='') return value;
+  }
+  // Last-resort compatible header match for other CENTER/GCSM export versions.
+  const candidates=headers.map(h=>({header:h,key:mgHeaderKey(h)})).filter(x=>
+    !x.key.includes('ngay') &&
+    (x.key.includes('don') || x.key.includes('order') || x.key.includes('giao dich')) &&
+    (x.key.includes('ma') || x.key.includes('so') || x.key.includes('order'))
   );
-  if(i>=0&&row[headers[i]]!==undefined&&row[headers[i]]!==null&&String(row[headers[i]]).trim())return row[headers[i]];
+  for(const x of candidates){
+    const value=row[x.header];
+    if(value!==undefined && value!==null && String(value).trim()!=='') return value;
+  }
   return null;
 }
 function mgDateValue(v){if(v instanceof Date)return mgDate(v);if(typeof v==='number'&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);if(d)return String(d.y)+'-'+String(d.m).padStart(2,'0')+'-'+String(d.d).padStart(2,'0')+' '+String(d.H||0).padStart(2,'0')+':'+String(d.M||0).padStart(2,'0');}const s=String(v??'').trim();if(!s)return '';const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(.*)$/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')+(m[4]?' '+m[4].trim():'');return s.slice(0,19);}
