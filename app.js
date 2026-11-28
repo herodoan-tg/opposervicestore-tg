@@ -556,6 +556,9 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         actual: excelNum(summary[actualCol])
       }));
       next.salesTotal = { target: excelNum(summary[1]), actual: excelNum(summary[2]) };
+      next.baseTargets = Object.fromEntries(salesCols.map(([category, targetCol]) =>
+        [category, excelNum(summary[targetCol])]
+      ));
 
       // Kỹ thuật viên: Tổng hợp!C:K, dữ liệu bắt đầu dòng 12 (index 11).
       next.technicians = [];
@@ -829,8 +832,11 @@ document.getElementById("btnResetDefault").addEventListener("click", () => {
   if (confirm("Khôi phục toàn bộ dữ liệu & Target về bản gốc của file T11?")) {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("oppo_tg_dashboard_targets_v1");
-    appState = structuredClone(DEFAULT_DATA);
-    saveState("Khôi phục bản gốc T11");
+    appState = emptyImportedState(null);
+    if (appState.baseTargets) {
+      appState.sales.forEach(item => { item.target = Number(appState.baseTargets[item.category]) || 0; });
+    }
+    saveState("Đã xóa Target tùy chỉnh");
     renderDashboard();
     targetModal.classList.add("hidden");
   }
