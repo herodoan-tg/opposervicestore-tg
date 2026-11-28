@@ -75,7 +75,7 @@ body {
 .btn-accent:hover { background: #3b82f6; }
 .btn-ghost { background: transparent; color: var(--text-muted); border-color: var(--border); }
 
-.container { max-width: 1400px; margin: 24px auto; padding: 0 24px; display: flex; flex-direction: column; gap: 22px; }
+.container { max-width: 1440px; margin: 24px auto; padding: 0 24px; display: flex; flex-direction: column; gap: 22px; }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
 .kpi-grid-2 { grid-template-columns: repeat(2, 1fr); }
@@ -119,7 +119,7 @@ body {
 .tables-row { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; }
 @media (max-width: 1050px) { .tables-row { grid-template-columns: 1fr; } }
 
-.filter-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.filter-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .search-input, .select-input {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -133,15 +133,14 @@ body {
 .search-input:focus, .select-input:focus { border-color: var(--oppo-green-light); }
 
 .table-responsive { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
-th, td { padding: 11px 12px; border-bottom: 1px solid var(--border); text-align: left; }
-th { color: var(--text-muted); font-weight: 600; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.3px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+th, td { padding: 10px 11px; border-bottom: 1px solid var(--border); text-align: left; }
+th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 tbody tr:hover { background: var(--surface-hover); }
-tfoot td { font-weight: 700; background: rgba(15, 23, 42, 0.5); border-top: 2px solid var(--border); }
 
 .contrib-bar-wrap { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.contrib-bar { width: 64px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
+.contrib-bar { width: 58px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
 .contrib-bar-fill { height: 100%; background: var(--oppo-green-light); }
 
 .mini-stats {

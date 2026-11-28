@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPPO Experience & Service Store - Dashboard Vận Hành v3</title>
+  <title>OPPO Experience & Service Store - Dashboard Vận Hành v4</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -37,7 +37,7 @@
   </header>
 
   <main class="container">
-    <!-- KPI Cards: Bỏ SERVICE VOLUME (MỚI) và CHẨN ĐOÁN SAU SỬA CHỮA -->
+    <!-- KPI Cards: Tổng điểm doanh số & KPI TAT 1H -->
     <section class="kpi-grid kpi-grid-2">
       <div class="kpi-card highlight">
         <div class="kpi-header">
@@ -147,27 +147,28 @@
       </div>
     </section>
 
-    <!-- Mục 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự -->
+    <!-- Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (Center SO + GCSM SO) -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>🏆 Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự</h3>
-          <span class="hint">Phân tích tỷ trọng điểm số, nhóm hàng chủ lực và mức độ hoàn thành KPI cá nhân</span>
+          <span class="hint">Tổng hợp từ 2 sheet GCSM SO và Center SO • Chuẩn hóa đúng tên nhân viên thực hiện</span>
         </div>
-        <div class="badge badge-info" id="staffTotalBadge">Tổng điểm nhân sự ghi nhận: 205 điểm</div>
+        <div class="badge badge-info" id="staffTotalBadge">Tổng điểm nhân sự (GCSM SO + Center SO): 0 điểm</div>
       </div>
       <div class="table-responsive">
         <table id="staffContributionTable">
           <thead>
             <tr>
-              <th>Nhân sự</th>
-              <th>Chức danh / Mã NV</th>
+              <th>Tên nhân sự</th>
+              <th>Nguồn ghi nhận</th>
+              <th class="num">Số đơn / phiếu</th>
               <th class="num">Máy (Phone/Pad)</th>
               <th class="num">Phụ kiện & IoT</th>
               <th class="num">Oppo Care & MDCL</th>
-              <th class="num">Tổng điểm ĐG</th>
-              <th class="num">Tỷ trọng đóng góp</th>
-              <th>Đánh giá hiệu suất</th>
+              <th class="num">Tổng điểm</th>
+              <th class="num">Doanh thu (VNĐ)</th>
+              <th class="num">Tỷ trọng điểm</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -175,16 +176,24 @@
       </div>
     </section>
 
-    <!-- Mục 3: Bảng xem chi tiết doanh số sản phẩm -->
+    <!-- Chi tiết doanh số theo sản phẩm (GCSM SO + Center SO) -->
     <section class="card">
       <div class="card-header">
         <div>
           <h3>📦 Chi Tiết Doanh Số Theo Sản Phẩm (Product Sales Breakdown)</h3>
-          <span class="hint">Theo dõi sản lượng bán ra, hệ số quy đổi điểm và doanh thu từng model/nhóm hàng</span>
+          <span class="hint">Tổng hợp sản phẩm, điểm quy đổi và doanh thu từ 2 sheet GCSM SO và Center SO</span>
         </div>
         <div class="filter-group no-print">
+          <select id="filterProductSource" class="select-input">
+            <option value="ALL">Tất cả nguồn (Center SO + GCSM SO)</option>
+            <option value="Center SO">Chỉ Center SO</option>
+            <option value="GCSM SO">Chỉ GCSM SO</option>
+          </select>
           <select id="filterProductCat" class="select-input">
             <option value="ALL">Tất cả nhóm hàng</option>
+          </select>
+          <select id="filterProductStaff" class="select-input">
+            <option value="ALL">Tất cả nhân viên</option>
           </select>
         </div>
       </div>
@@ -195,8 +204,9 @@
               <th>Mã SKU / Model</th>
               <th>Tên sản phẩm</th>
               <th>Nhóm hàng</th>
-              <th class="num">Số lượng bán</th>
-              <th class="num">Hệ số điểm</th>
+              <th>Nguồn sheet</th>
+              <th>Nhân viên</th>
+              <th class="num">Số lượng</th>
               <th class="num">Tổng điểm</th>
               <th class="num">Doanh thu (VNĐ)</th>
             </tr>
@@ -206,15 +216,20 @@
       </div>
     </section>
 
-    <!-- Mục 2: Bảng xem chi tiết đơn hàng -->
+    <!-- Chi tiết đơn hàng & phiếu giao dịch (Sale Orders / Service Tickets từ GCSM SO + Center SO) -->
     <section class="card">
       <div class="card-header">
         <div>
-          <h3>🧾 Chi Tiết Đơn Hàng & Phiếu Giao Dịch (Center SO & GCSM SO)</h3>
-          <span class="hint">Danh sách giao dịch bán máy, phụ kiện và gói dịch vụ</span>
+          <h3>🧾 Chi Tiết Đơn Hàng & Phiếu Giao Dịch (Sale Orders / Service Tickets)</h3>
+          <span class="hint">Dữ liệu hợp nhất từ 2 sheet GCSM SO và Center SO • Hiển thị đúng tên nhân viên phụ trách</span>
         </div>
         <div class="filter-group no-print">
-          <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã phiếu, nhân viên, sản phẩm..." />
+          <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã phiếu, tên nhân viên, sản phẩm..." />
+          <select id="filterOrderSource" class="select-input">
+            <option value="ALL">Tất cả sheet</option>
+            <option value="Center SO">Center SO</option>
+            <option value="GCSM SO">GCSM SO</option>
+          </select>
           <select id="filterOrderStatus" class="select-input">
             <option value="ALL">Tất cả trạng thái</option>
             <option value="Hoàn thành">Hoàn thành</option>
@@ -228,10 +243,11 @@
           <thead>
             <tr>
               <th>Mã Đơn / Phiếu</th>
+              <th>Sheet nguồn</th>
               <th>Ngày giờ</th>
               <th>Loại giao dịch</th>
               <th>Sản phẩm / Dịch vụ</th>
-              <th>Nhân viên phụ trách</th>
+              <th>Tên nhân viên</th>
               <th class="num">Điểm</th>
               <th class="num">Giá trị (VNĐ)</th>
               <th>Trạng thái</th>
@@ -251,7 +267,7 @@
         <button class="close-btn" id="closeTargetModal">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống sẽ tự động tính lại % hoàn thành và lưu lại theo lần cập nhật cuối cùng.</p>
+        <p class="modal-desc">Điều chỉnh chỉ tiêu điểm cho từng nhóm hàng. Hệ thống tự động lưu lại giá trị của lần chỉnh sửa cuối cùng.</p>
         <div id="targetInputsGrid" class="target-grid"></div>
       </div>
       <div class="modal-footer">

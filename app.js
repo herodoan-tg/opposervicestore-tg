@@ -27,49 +27,48 @@ const DEFAULT_DATA = {
     filmTotal: 161,
     filmRate: 36.1
   },
-  // Yêu cầu 4: Tập trung đúng 2 nhân viên kỹ thuật từ sheet KPI-KT & Tổng hợp
+  // 2 kỹ thuật viên chính từ sheet KPI-KT & Tổng hợp
   technicians: [
     { name: "PHAN CHÍ TRUNG", code: "D70979015", repairNormal: 183, addonNormal: 45.5, soNormal: 70, soFindN: 4, newVol: 302.5, tat1h: "98.63%" },
     { name: "ĐOÀN MINH HÙNG", code: "D24248811", repairNormal: 6, addonNormal: 1.5, soNormal: 7, soFindN: 0, newVol: 14.5, tat1h: "100%" }
   ],
-  // Yêu cầu 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (Center SO + GCSM SO)
+  // Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (tổng hợp từ 2 sheet GCSM SO và Center SO)
   staffContributions: [
-    { name: "ĐOÀN MINH HÙNG", role: "KTV / Lên đơn Brandshop", code: "D24248811", devicePts: 63, accPts: 22, carePts: 12, targetPts: 80 },
-    { name: "PHAN CHÍ TRUNG", role: "Kỹ thuật viên (GCSM SO)", code: "D70979015", devicePts: 0, accPts: 2, carePts: 56, targetPts: 55 },
-    { name: "HUỲNH HỒNG HUỆ", role: "Tư vấn bán hàng (SALE)", code: "D48955416", devicePts: 38, accPts: 8, carePts: 4, targetPts: 50 }
+    { name: "ĐOÀN MINH HÙNG", sources: ["Center SO", "GCSM SO"], orderCount: 14, devicePts: 63, accPts: 22, carePts: 12, revenue: 132649000 },
+    { name: "PHAN CHÍ TRUNG", sources: ["GCSM SO"], orderCount: 25, devicePts: 0, accPts: 2, carePts: 56, revenue: 16480000 },
+    { name: "HUỲNH HỒNG HUỆ", sources: ["Center SO", "GCSM SO"], orderCount: 12, devicePts: 38, accPts: 8, carePts: 4, revenue: 65828200 }
   ],
-  // Yêu cầu 3: Chi tiết doanh số sản phẩm tổng hợp từ Center SO & GCSM SO
+  // Chi tiết doanh số theo sản phẩm (tổng hợp từ 2 sheet GCSM SO và Center SO)
   productDetails: [
-    { sku: "CPH2859", name: "OPPO Reno16 F 5G 8GB+256GB", category: "PHONE", qty: 6, pointRate: 5.0, revenue: 78090000 },
-    { sku: "CPH-R15P", name: "OPPO Reno15 Pro 5G 12GB+256GB", category: "PHONE", qty: 2, pointRate: 8.0, revenue: 28280000 },
-    { sku: "CPH-R16", name: "OPPO Reno16 5G 8GB+256GB", category: "PHONE", qty: 2, pointRate: 5.0, revenue: 32480000 },
-    { sku: "CPH2913", name: "OPPO Find X10 Pro Max 16GB+512GB", category: "PHONE", qty: 1, pointRate: 9.0, revenue: 43690000 },
-    { sku: "CPH-FX9S", name: "OPPO Find X9s 12GB+256GB / 512GB", category: "PHONE", qty: 2, pointRate: 7.0, revenue: 20990000 },
-    { sku: "CPH-R15", name: "OPPO Reno15 5G (8GB/12GB+256GB)", category: "PHONE", qty: 2, pointRate: 8.0, revenue: 26530000 },
-    { sku: "CPH-A6", name: "OPPO A6 Pro / A6x / A6t Series", category: "PHONE", qty: 4, pointRate: 2.25, revenue: 8690000 },
-    { sku: "YYA003", name: "Find X10 Pro Max Hasselblad Teleconverter Kit", category: "PHONE", qty: 1, pointRate: 5.0, revenue: 6990000 },
-    { sku: "IOT-AUDIO", name: "Tai nghe OPPO Enco Buds3 / Air 3 / Buds 2", category: "TAI NGHE", qty: 5, pointRate: 2.0, revenue: 2700000 },
-    { sku: "CASE-OP", name: "Ốp lưng từ tính ROCK / RORO JUMP OPPO", category: "ỐP LƯNG", qty: 4, pointRate: 3.0, revenue: 748000 },
-    { sku: "OCARE-1Y", name: "Gói Extended Warranty / Screen Protection 1 Năm", category: "Oppo Care", qty: 6, pointRate: 4.0, revenue: 1846000 },
-    { sku: "MDCL-KD", name: "Miếng dán cường lực Kudun / Find X8 / Reno16F", category: "MDCL", qty: 54, pointRate: 1.0, revenue: 6930000 },
-    { sku: "SDP-VOOC", name: "Sạc dự phòng SDP AS-182-45 / FP-110 / JB-200", category: "Sạc dự phòng", qty: 5, pointRate: 2.0, revenue: 3116800 }
+    { sku: "CPH2859", name: "OPPO Reno16 F 5G 8GB+256GB", category: "PHONE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 6, points: 30, revenue: 78090000 },
+    { sku: "CPH-R15P", name: "OPPO Reno15 Pro 5G 12GB+256GB", category: "PHONE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 2, points: 16, revenue: 28280000 },
+    { sku: "CPH-R16", name: "OPPO Reno16 5G 8GB+256GB", category: "PHONE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 2, points: 10, revenue: 32480000 },
+    { sku: "CPH2913", name: "OPPO Find X10 Pro Max 16GB+512GB", category: "PHONE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 1, points: 9, revenue: 43690000 },
+    { sku: "CPH-FX9S", name: "OPPO Find X9s 12GB+256GB / 512GB", category: "PHONE", source: "Center SO", staff: "HUỲNH HỒNG HUỆ", qty: 2, points: 14, revenue: 20990000 },
+    { sku: "CPH-R15", name: "OPPO Reno15 5G (8GB/12GB+256GB)", category: "PHONE", source: "Center SO", staff: "HUỲNH HỒNG HUỆ", qty: 2, points: 16, revenue: 26530000 },
+    { sku: "CPH-A6", name: "OPPO A6 Pro / A6x / A6t Series", category: "PHONE", source: "Center SO", staff: "HUỲNH HỒNG HUỆ", qty: 4, points: 8, revenue: 8690000 },
+    { sku: "IOT-AUDIO", name: "Tai nghe Enco Buds3 / Enco Air3 / Enco Buds2", category: "TAI NGHE", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 5, points: 10, revenue: 2700000 },
+    { sku: "CASE-OP", name: "Ốp lưng từ tính ROCK / RORO JUMP OPPO", category: "ỐP LƯNG", source: "Center SO", staff: "ĐOÀN MINH HÙNG", qty: 4, points: 12, revenue: 748000 },
+    { sku: "OCARE-1Y", name: "Gói Extended Warranty / Screen Protection 1 Năm", category: "Oppo Care", source: "GCSM SO", staff: "PHAN CHÍ TRUNG", qty: 6, points: 24, revenue: 1846000 },
+    { sku: "MDCL-GCSM", name: "Miếng dán cường lực / Film bảo vệ (GCSM & Center)", category: "MDCL", source: "GCSM SO", staff: "PHAN CHÍ TRUNG", qty: 54, points: 54, revenue: 6930000 },
+    { sku: "SDP-VOOC", name: "Sạc dự phòng SDP AS-182-45 / FP-110 / JB-200", category: "Sạc dự phòng", source: "GCSM SO", staff: "HUỲNH HỒNG HUỆ", qty: 5, points: 10, revenue: 3116800 }
   ],
-  // Yêu cầu 2: Chi tiết đơn hàng từ Center SO & GCSM SO
+  // Chi tiết đơn hàng & phiếu giao dịch (Sale Orders / Service Tickets từ GCSM SO & Center SO)
   orderDetails: [
-    { id: "72026112510183295711", time: "25/11/2026 10:18", type: "Center SO - Xuất bán", product: "Reno15 Pro 5G 12GB+256GB (+ Tặng Enco Buds3)", staff: "ĐOÀN MINH HÙNG", points: 10, amount: 13890000, status: "Hoàn thành" },
-    { id: "72026112315435141171", time: "23/11/2026 15:43", type: "Center SO - Xuất bán", product: "A6 Pro 5G 8GB+256GB (+ Tặng Enco Buds3)", staff: "HUỲNH HỒNG HUỆ", points: 5, amount: 8690000, status: "Hoàn thành" },
-    { id: "VN001034-SO2611230004", time: "23/11/2026 17:01", type: "GCSM SO - Warranty", product: "Extended Warranty Plan - One Year", staff: "HUỲNH HỒNG HUỆ", points: 4, amount: 149000, status: "Hoàn thành" },
-    { id: "VN001034-SO2611230001", time: "23/11/2026 08:43", type: "GCSM SO - Phụ kiện", product: "Sạc dự phòng SDP AS-182-45 Bạc", staff: "HUỲNH HỒNG HUỆ", points: 2, amount: 719200, status: "Hoàn thành" },
-    { id: "72026112115353333151", time: "21/11/2026 15:35", type: "Center SO - Xuất bán", product: "Reno16 F 5G 8GB+256GB (+ Tặng Enco Buds3)", staff: "ĐOÀN MINH HÙNG", points: 7, amount: 11990000, status: "Hoàn thành" },
-    { id: "72026111912304805961", time: "19/11/2026 12:30", type: "Center SO - Phụ kiện", product: "MDCL Reno16F_K23 + Ốp lưng RORO JUMP", staff: "ĐOÀN MINH HÙNG", points: 4, amount: 499000, status: "Hoàn thành" },
-    { id: "VN001034-SO2611160006", time: "16/11/2026 15:19", type: "GCSM SO - Warranty", product: "Extended Warranty Plan - One Year", staff: "PHAN CHÍ TRUNG", points: 4, amount: 350000, status: "Hoàn thành" },
-    { id: "72026111316054236901", time: "13/11/2026 16:05", type: "Center SO - Xuất bán", product: "Find X9s 12GB+256GB", staff: "HUỲNH HỒNG HUỆ", points: 7, amount: 20990000, status: "Hoàn thành" },
-    { id: "72026110710153042761", time: "07/11/2026 10:15", type: "Center SO - Xuất bán", product: "Find X10 Pro Max 16GB+512GB + Teleconverter Kit", staff: "ĐOÀN MINH HÙNG", points: 14, amount: 50680000, status: "Hoàn thành" },
-    { id: "VN001034-SO2611050002", time: "05/11/2026 10:57", type: "GCSM SO - Warranty", product: "Extended Warranty Plan - One Year", staff: "PHAN CHÍ TRUNG", points: 4, amount: 450000, status: "Hoàn thành" }
+    { id: "72026112510183295711", source: "Center SO", time: "25/11/2026 10:18", type: "Sale Order (Xuất bán)", product: "Reno15 Pro 5G 12GB+256GB (+ Enco Buds3)", staff: "ĐOÀN MINH HÙNG", points: 10, amount: 13890000, status: "Hoàn thành" },
+    { id: "72026112315435141171", source: "Center SO", time: "23/11/2026 15:43", type: "Sale Order (Xuất bán)", product: "A6 Pro 5G 8GB+256GB (+ Enco Buds3)", staff: "HUỲNH HỒNG HUỆ", points: 5, amount: 8690000, status: "Hoàn thành" },
+    { id: "VN001034-SO2611230004", source: "GCSM SO", time: "23/11/2026 17:01", type: "Service Ticket (Warranty)", product: "Extended Warranty Plan - One Year", staff: "HUỲNH HỒNG HUỆ", points: 4, amount: 149000, status: "Hoàn thành" },
+    { id: "VN001034-SO2611230001", source: "GCSM SO", time: "23/11/2026 08:43", type: "Service Ticket (Accessory)", product: "Sạc dự phòng SDP AS-182-45 Bạc", staff: "HUỲNH HỒNG HUỆ", points: 2, amount: 719200, status: "Hoàn thành" },
+    { id: "72026112115353333151", source: "Center SO", time: "21/11/2026 15:35", type: "Sale Order (Xuất bán)", product: "Reno16 F 5G 8GB+256GB (+ Enco Buds3)", staff: "ĐOÀN MINH HÙNG", points: 7, amount: 11990000, status: "Hoàn thành" },
+    { id: "72026111912304805961", source: "Center SO", time: "19/11/2026 12:30", type: "Sale Order (Phụ kiện)", product: "MDCL Reno16F_K23 + Ốp lưng RORO JUMP", staff: "ĐOÀN MINH HÙNG", points: 4, amount: 499000, status: "Hoàn thành" },
+    { id: "VN001034-SO2611160006", source: "GCSM SO", time: "16/11/2026 15:19", type: "Service Ticket (Warranty)", product: "Extended Warranty Plan - One Year", staff: "PHAN CHÍ TRUNG", points: 4, amount: 350000, status: "Hoàn thành" },
+    { id: "72026111316054236901", source: "Center SO", time: "13/11/2026 16:05", type: "Sale Order (Xuất bán)", product: "Find X9s 12GB+256GB", staff: "HUỲNH HỒNG HUỆ", points: 7, amount: 20990000, status: "Hoàn thành" },
+    { id: "72026110710153042761", source: "Center SO", time: "07/11/2026 10:15", type: "Sale Order (Xuất bán)", product: "Find X10 Pro Max 16GB+512GB + Teleconverter Kit", staff: "ĐOÀN MINH HÙNG", points: 14, amount: 50680000, status: "Hoàn thành" },
+    { id: "VN001034-SO2611050002", source: "GCSM SO", time: "05/11/2026 10:57", type: "Service Ticket (Warranty)", product: "Extended Warranty Plan - One Year", staff: "PHAN CHÍ TRUNG", points: 4, amount: 450000, status: "Hoàn thành" }
   ]
 };
 
-const STORAGE_KEY = "oppo_tg_dashboard_state_v3";
+const STORAGE_KEY = "oppo_tg_dashboard_state_v4";
 let appState = loadState();
 let salesChartInstance = null;
 let serviceMixChartInstance = null;
@@ -87,16 +86,16 @@ function loadState() {
   return structuredClone(DEFAULT_DATA);
 }
 
-// Lưu trạng thái hiện tại (dữ liệu upload hoặc Target điều chỉnh) theo lần cập nhật cuối cùng
-function saveState(customTimestampLabel = null) {
+// Lưu trạng thái lần cuối cùng (dữ liệu upload mới hoặc Target chỉnh sửa cuối cùng)
+function saveState(customActionLabel = null) {
   const now = new Date();
   const timeStr = `${now.toLocaleTimeString("vi-VN")} - ${now.toLocaleDateString("vi-VN")}`;
-  if (customTimestampLabel) {
-    appState.lastUpdated = `${customTimestampLabel} (Cập nhật lúc ${timeStr})`;
-  } else if (!appState.lastUpdated.includes("Cập nhật lúc")) {
-    appState.lastUpdated = `${appState.lastUpdated} (Lưu lúc ${timeStr})`;
+  if (customActionLabel) {
+    appState.lastUpdated = `${customActionLabel} (Lưu lần cuối: ${timeStr})`;
+  } else if (!appState.lastUpdated.includes("Lưu lần cuối:")) {
+    appState.lastUpdated = `${appState.lastUpdated} (Lưu lần cuối: ${timeStr})`;
   } else {
-    appState.lastUpdated = appState.lastUpdated.replace(/\(Cập nhật lúc.*\)|\(Lưu lúc.*\)/, `(Cập nhật lúc ${timeStr})`);
+    appState.lastUpdated = appState.lastUpdated.replace(/\(Lưu lần cuối:.*\)/, `(Lưu lần cuối: ${timeStr})`);
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
 }
@@ -105,9 +104,14 @@ function formatVND(val) {
   return Number(val || 0).toLocaleString("vi-VN") + " đ";
 }
 
-function cleanStaffName(raw) {
-  if (!raw) return "Khác";
-  return String(raw).replace(/（.*?）|\(.*?\)/g, "").trim().toUpperCase();
+// Chuẩn hóa tên nhân viên sạch sẽ, giữ đúng tên đầy đủ viết hoa
+function normalizeStaffName(raw) {
+  if (!raw) return "CHƯA GÁN NHÂN VIÊN";
+  const cleaned = String(raw)
+    .replace(/（.*?）|\(.*?\)|\[.*?\]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned ? cleaned.toUpperCase() : "CHƯA GÁN NHÂN VIÊN";
 }
 
 function renderDashboard() {
@@ -139,7 +143,7 @@ function renderDashboard() {
   renderSalesTable();
   renderTechTable();
   renderStaffContributionTable();
-  populateProductFilter();
+  populateProductFilters();
   renderProductDetailTable();
   renderOrderDetailTable();
   renderCharts();
@@ -175,7 +179,7 @@ function renderSalesTable() {
   document.getElementById("salesSummaryText").textContent = `${achievedCount}/${appState.sales.length} nhóm đạt & vượt Target`;
 }
 
-// Yêu cầu 4: Chỉ tập trung vào 2 nhân viên kỹ thuật chính
+// Tập trung 2 KTV chính
 function renderTechTable() {
   const tbody = document.querySelector("#techTable tbody");
   tbody.innerHTML = "";
@@ -194,84 +198,95 @@ function renderTechTable() {
   });
 }
 
-// Yêu cầu 5: Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự
+// Đánh giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự (từ GCSM SO + Center SO)
 function renderStaffContributionTable() {
   const tbody = document.querySelector("#staffContributionTable tbody");
   tbody.innerHTML = "";
 
   const staffList = appState.staffContributions.map(st => {
-    const total = Number(st.devicePts || 0) + Number(st.accPts || 0) + Number(st.carePts || 0);
-    return { ...st, total };
+    const totalPts = Number((Number(st.devicePts || 0) + Number(st.accPts || 0) + Number(st.carePts || 0)).toFixed(1));
+    return { ...st, totalPts };
   });
 
-  const grandTotal = staffList.reduce((acc, s) => acc + s.total, 0);
-  document.getElementById("staffTotalBadge").textContent = `Tổng điểm nhân sự ghi nhận: ${grandTotal} điểm`;
+  const grandTotalPts = staffList.reduce((acc, s) => acc + s.totalPts, 0);
+  document.getElementById("staffTotalBadge").textContent =
+    `Tổng điểm nhân sự (GCSM SO + Center SO): ${grandTotalPts.toFixed(1)} điểm`;
 
   staffList.forEach(st => {
-    const sharePct = grandTotal > 0 ? ((st.total / grandTotal) * 100).toFixed(1) : 0;
-    const kpiPct = st.targetPts > 0 ? ((st.total / st.targetPts) * 100).toFixed(0) : 100;
-
-    let ratingBadge = `<span class="badge">Hoàn thành (${kpiPct}% KPI)</span>`;
-    if (kpiPct >= 115) ratingBadge = `<span class="badge">Xuất sắc (${kpiPct}% KPI)</span>`;
-    else if (kpiPct < 90) ratingBadge = `<span class="badge badge-warn">Cần bám sát (${kpiPct}% KPI)</span>`;
+    const sharePct = grandTotalPts > 0 ? ((st.totalPts / grandTotalPts) * 100).toFixed(1) : 0;
+    const srcText = Array.isArray(st.sources) && st.sources.length > 0 ? st.sources.join(" + ") : "GCSM SO / Center SO";
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${st.name}</strong></td>
-      <td>${st.role} <br><small style="color:var(--text-muted)">${st.code}</small></td>
-      <td class="num">${st.devicePts}</td>
-      <td class="num">${st.accPts}</td>
-      <td class="num">${st.carePts}</td>
-      <td class="num"><strong style="color:#10b981;font-size:0.95rem">${st.total}</strong></td>
+      <td><span class="badge badge-info">${srcText}</span></td>
+      <td class="num">${st.orderCount || 0}</td>
+      <td class="num">${Number(st.devicePts || 0).toFixed(1)}</td>
+      <td class="num">${Number(st.accPts || 0).toFixed(1)}</td>
+      <td class="num">${Number(st.carePts || 0).toFixed(1)}</td>
+      <td class="num"><strong style="color:#10b981;font-size:0.95rem">${st.totalPts.toFixed(1)}</strong></td>
+      <td class="num"><strong>${formatVND(st.revenue)}</strong></td>
       <td class="num">
         <div class="contrib-bar-wrap">
           <span>${sharePct}%</span>
           <div class="contrib-bar"><div class="contrib-bar-fill" style="width:${sharePct}%"></div></div>
         </div>
       </td>
-      <td>${ratingBadge}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// Yêu cầu 3: Chi tiết doanh số sản phẩm
-function populateProductFilter() {
-  const select = document.getElementById("filterProductCat");
-  const currentVal = select.value;
-  const cats = [...new Set(appState.productDetails.map(p => p.category))];
-  select.innerHTML = `<option value="ALL">Tất cả nhóm hàng (${cats.length})</option>`;
-  cats.forEach(c => {
-    select.innerHTML += `<option value="${c}">${c}</option>`;
-  });
-  if (cats.includes(currentVal)) select.value = currentVal;
+// Chi tiết doanh số theo sản phẩm (GCSM SO + Center SO)
+function populateProductFilters() {
+  const catSelect = document.getElementById("filterProductCat");
+  const staffSelect = document.getElementById("filterProductStaff");
+  const curCat = catSelect.value;
+  const curStaff = staffSelect.value;
+
+  const cats = [...new Set(appState.productDetails.map(p => p.category).filter(Boolean))];
+  const staffs = [...new Set(appState.productDetails.map(p => p.staff).filter(Boolean))];
+
+  catSelect.innerHTML = `<option value="ALL">Tất cả nhóm hàng (${cats.length})</option>`;
+  cats.forEach(c => { catSelect.innerHTML += `<option value="${c}">${c}</option>`; });
+  if (cats.includes(curCat)) catSelect.value = curCat;
+
+  staffSelect.innerHTML = `<option value="ALL">Tất cả nhân viên (${staffs.length})</option>`;
+  staffs.forEach(s => { staffSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+  if (staffs.includes(curStaff)) staffSelect.value = curStaff;
 }
 
 function renderProductDetailTable() {
   const tbody = document.querySelector("#productDetailTable tbody");
-  const filterCat = document.getElementById("filterProductCat").value;
+  const srcFilter = document.getElementById("filterProductSource").value;
+  const catFilter = document.getElementById("filterProductCat").value;
+  const staffFilter = document.getElementById("filterProductStaff").value;
   tbody.innerHTML = "";
 
-  const filtered = filterCat === "ALL"
-    ? appState.productDetails
-    : appState.productDetails.filter(p => p.category === filterCat);
+  const filtered = appState.productDetails.filter(p => {
+    const matchSrc = srcFilter === "ALL" || p.source === srcFilter;
+    const matchCat = catFilter === "ALL" || p.category === catFilter;
+    const matchStaff = staffFilter === "ALL" || p.staff === staffFilter;
+    return matchSrc && matchCat && matchStaff;
+  });
 
   let sumQty = 0, sumPts = 0, sumRev = 0;
 
   filtered.forEach(p => {
-    const pts = Number((p.qty * p.pointRate).toFixed(1));
-    sumQty += Number(p.qty);
+    const pts = Number(p.points || 0);
+    sumQty += Number(p.qty || 0);
     sumPts += pts;
-    sumRev += Number(p.revenue);
+    sumRev += Number(p.revenue || 0);
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><code>${p.sku}</code></td>
       <td><strong>${p.name}</strong></td>
       <td><span class="badge badge-info">${p.category}</span></td>
+      <td>${p.source}</td>
+      <td><strong>${p.staff}</strong></td>
       <td class="num">${p.qty}</td>
-      <td class="num">x${Number(p.pointRate).toFixed(1)}</td>
-      <td class="num"><strong style="color:#10b981">${pts}</strong></td>
+      <td class="num"><strong style="color:#10b981">${pts.toFixed(1)}</strong></td>
       <td class="num">${formatVND(p.revenue)}</td>
     `;
     tbody.appendChild(tr);
@@ -280,30 +295,32 @@ function renderProductDetailTable() {
   const tfoot = document.createElement("tr");
   tfoot.style.background = "rgba(15, 23, 42, 0.65)";
   tfoot.innerHTML = `
-    <td colspan="3"><strong>TỔNG CỘNG (${filtered.length} dòng sản phẩm)</strong></td>
+    <td colspan="5"><strong>TỔNG CỘNG (${filtered.length} dòng sản phẩm)</strong></td>
     <td class="num"><strong>${sumQty}</strong></td>
-    <td class="num">-</td>
     <td class="num"><strong style="color:#10b981">${sumPts.toFixed(1)}</strong></td>
     <td class="num"><strong>${formatVND(sumRev)}</strong></td>
   `;
   tbody.appendChild(tfoot);
 }
 
-// Yêu cầu 2: Chi tiết đơn hàng
+// Chi tiết đơn hàng & phiếu giao dịch (GCSM SO + Center SO)
 function renderOrderDetailTable() {
   const tbody = document.querySelector("#orderDetailTable tbody");
   const keyword = document.getElementById("searchOrderInput").value.trim().toLowerCase();
+  const srcFilter = document.getElementById("filterOrderSource").value;
   const statusFilter = document.getElementById("filterOrderStatus").value;
   tbody.innerHTML = "";
 
   const filtered = appState.orderDetails.filter(o => {
+    const matchSrc = srcFilter === "ALL" || o.source === srcFilter;
     const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
     const matchKey = !keyword ||
       String(o.id).toLowerCase().includes(keyword) ||
       String(o.product).toLowerCase().includes(keyword) ||
       String(o.staff).toLowerCase().includes(keyword) ||
-      String(o.type).toLowerCase().includes(keyword);
-    return matchStatus && matchKey;
+      String(o.type).toLowerCase().includes(keyword) ||
+      String(o.source).toLowerCase().includes(keyword);
+    return matchSrc && matchStatus && matchKey;
   });
 
   filtered.forEach(o => {
@@ -314,11 +331,12 @@ function renderOrderDetailTable() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><code>${o.id}</code></td>
+      <td><span class="badge badge-info">${o.source}</span></td>
       <td><small>${o.time}</small></td>
       <td>${o.type}</td>
       <td><strong>${o.product}</strong></td>
-      <td>${o.staff}</td>
-      <td class="num"><strong>${o.points}</strong></td>
+      <td><strong>${o.staff}</strong></td>
+      <td class="num"><strong style="color:#10b981">${Number(o.points || 0).toFixed(1)}</strong></td>
       <td class="num">${formatVND(o.amount)}</td>
       <td><span class="${badgeCls}">${o.status}</span></td>
     `;
@@ -326,8 +344,11 @@ function renderOrderDetailTable() {
   });
 }
 
+document.getElementById("filterProductSource").addEventListener("change", renderProductDetailTable);
 document.getElementById("filterProductCat").addEventListener("change", renderProductDetailTable);
+document.getElementById("filterProductStaff").addEventListener("change", renderProductDetailTable);
 document.getElementById("searchOrderInput").addEventListener("input", renderOrderDetailTable);
+document.getElementById("filterOrderSource").addEventListener("change", renderOrderDetailTable);
 document.getElementById("filterOrderStatus").addEventListener("change", renderOrderDetailTable);
 
 function renderCharts() {
@@ -390,7 +411,9 @@ function renderCharts() {
   });
 }
 
-// Bóc tách trực tiếp từ cấu trúc file 2026-KPI NEW 5.3.8-TECH-T11 - NEW.xlsx
+// Bóc tách dữ liệu từ file Excel T11:
+// - Tổng hợp, KPI-SC, KPI-KT cho KPI tổng quan & 2 KTV
+// - Tập trung 2 sheet GCSM SO và Center SO cho Nhân sự, Sản phẩm và Đơn hàng/Phiếu giao dịch
 document.getElementById("excelUpload").addEventListener("change", function (e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -401,7 +424,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
       const data = new Uint8Array(evt.target.result);
       const workbook = XLSX.read(data, { type: "array" });
 
-      // 1. Sheet Tổng hợp
       if (workbook.Sheets["Tổng hợp"]) {
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets["Tổng hợp"], { header: 1 });
         if (rows[2] && rows[2][0]) appState.shopName = rows[2][0];
@@ -425,13 +447,12 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
           }));
         }
 
-        // Lấy đúng 2 KTV
         const techs = [];
         for (let r = 11; r < rows.length; r++) {
           if (rows[r] && rows[r][2] && rows[r][3]) {
             techs.push({
               code: String(rows[r][2]).trim(),
-              name: String(rows[r][3]).trim(),
+              name: normalizeStaffName(rows[r][3]),
               repairNormal: Number(rows[r][6]) || 0,
               addonNormal: Number(rows[r][7]) || 0,
               soFindN: Number(rows[r][8]) || 0,
@@ -445,7 +466,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         if (techs.length > 0) appState.technicians = techs;
       }
 
-      // 2. Sheet KPI-KT (lấy TAT 1H chính xác từng KTV)
       if (workbook.Sheets["KPI-KT"]) {
         const ktRows = XLSX.utils.sheet_to_json(workbook.Sheets["KPI-KT"], { header: 1 });
         for (let r = 3; r <= 4; r++) {
@@ -460,7 +480,6 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         }
       }
 
-      // 3. Sheet KPI-SC
       if (workbook.Sheets["KPI-SC"]) {
         const kpiRows = XLSX.utils.sheet_to_json(workbook.Sheets["KPI-SC"], { header: 1 });
         const d = kpiRows[3];
@@ -480,60 +499,85 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
         }
       }
 
-      // 4. Bóc tách Center SO & GCSM SO cho Đơn hàng, Sản phẩm và Nhân sự
       const parsedOrders = [];
       const productMap = new Map();
       const staffMap = new Map();
 
-      const addStaffScore = (rawName, cat, pts) => {
-        if (!pts || pts <= 0) return;
-        const name = cleanStaffName(rawName);
+      const recordStaff = (rawName, sourceName, cat, pts, rev) => {
+        const name = normalizeStaffName(rawName);
         if (!staffMap.has(name)) {
-          staffMap.set(name, { name, role: "Nhân sự Shop", code: "NV-VN001034", devicePts: 0, accPts: 0, carePts: 0, targetPts: 60 });
+          staffMap.set(name, {
+            name,
+            sources: new Set(),
+            orderCount: 0,
+            devicePts: 0,
+            accPts: 0,
+            carePts: 0,
+            revenue: 0
+          });
         }
         const st = staffMap.get(name);
+        st.sources.add(sourceName);
+        st.orderCount += 1;
+        st.revenue += Number(rev || 0);
+
+        const p = Number(pts || 0);
         const cUpper = String(cat || "").toUpperCase();
-        if (cUpper.includes("PHONE") || cUpper.includes("PAD")) st.devicePts += pts;
-        else if (cUpper.includes("CARE") || cUpper.includes("DÁN") || cUpper.includes("MDCL")) st.carePts += pts;
-        else st.accPts += pts;
+        if (cUpper.includes("PHONE") || cUpper.includes("PAD")) st.devicePts += p;
+        else if (cUpper.includes("CARE") || cUpper.includes("DÁN") || cUpper.includes("MDCL") || cUpper.includes("FILM")) st.carePts += p;
+        else st.accPts += p;
       };
 
-      const addProductItem = (sku, name, cat, qty, pts, rev) => {
-        const key = `${cat}__${name}`;
+      const recordProduct = (sku, name, cat, sourceName, staffName, qty, pts, rev) => {
+        const cleanName = String(name || "").trim() || "Sản phẩm / Dịch vụ OPPO";
+        const key = `${sourceName}__${cat}__${staffName}__${cleanName}`;
         if (!productMap.has(key)) {
-          productMap.set(key, { sku: sku || "SP-OPPO", name, category: cat, qty: 0, totalPts: 0, revenue: 0 });
+          productMap.set(key, {
+            sku: sku || "N/A",
+            name: cleanName,
+            category: cat,
+            source: sourceName,
+            staff: staffName,
+            qty: 0,
+            points: 0,
+            revenue: 0
+          });
         }
         const item = productMap.get(key);
-        item.qty += qty;
-        item.totalPts += pts;
-        item.revenue += rev;
+        item.qty += Number(qty || 1);
+        item.points += Number(pts || 0);
+        item.revenue += Number(rev || 0);
       };
 
+      // Sheet 1: Center SO
       if (workbook.Sheets["Center SO"]) {
         const cRows = XLSX.utils.sheet_to_json(workbook.Sheets["Center SO"], { header: 1 });
         for (let r = 3; r < cRows.length; r++) {
           const row = cRows[r];
-          if (!row || !row[6]) continue;
-          const orderId = String(row[5] || "");
+          if (!row || (!row[5] && !row[12])) continue;
+
+          const orderId = String(row[5] || `CSO-${r}`);
           const time = String(row[3] || "");
           const sku = String(row[9] || "N/A");
           const prodName = String(row[12] || "").trim();
           const qty = Number(row[14]) || 1;
           const paid = Number(row[22]) || 0;
-          const staff = cleanStaffName(row[40] || row[36]);
+          const staff = normalizeStaffName(row[40] || row[36] || row[18]);
           const exportType = String(row[46] || "Xuất bán");
-          const status = String(row[48] || "Hiệu lực") === "Hiệu lực" ? "Hoàn thành" : String(row[48]);
+          const rawStatus = String(row[48] || "Hiệu lực");
+          const status = rawStatus === "Hiệu lực" ? "Hoàn thành" : rawStatus;
           const rawType = String(row[71] || row[11] || "Khác").toUpperCase();
           const pts = Number(row[72]) || 0;
 
-          if (pts > 0 || paid > 0) {
+          if (pts > 0 || paid > 0 || prodName) {
             let normCat = rawType === "0" ? (prodName.toLowerCase().includes("dán") ? "MDCL" : "PHONE") : rawType;
             if (normCat === "Phone") normCat = "PHONE";
 
             parsedOrders.push({
               id: orderId,
+              source: "Center SO",
               time,
-              type: `Center SO (${exportType})`,
+              type: `Sale Order (${exportType})`,
               product: prodName,
               staff,
               points: pts,
@@ -541,36 +585,39 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
               status
             });
 
-            if (pts > 0) {
-              addProductItem(sku, prodName, normCat, qty, pts, paid);
-              addStaffScore(staff, normCat, pts);
-            }
+            recordStaff(staff, "Center SO", normCat, pts, paid);
+            recordProduct(sku, prodName, normCat, "Center SO", staff, qty, pts, paid);
           }
         }
       }
 
+      // Sheet 2: GCSM SO
       if (workbook.Sheets["GCSM SO"]) {
         const gRows = XLSX.utils.sheet_to_json(workbook.Sheets["GCSM SO"], { header: 1 });
         for (let r = 1; r < gRows.length; r++) {
           const row = gRows[r];
-          if (!row || !row[0]) continue;
-          const orderId = String(row[0]);
-          const status = String(row[6] || "") === "Completed" ? "Hoàn thành" : String(row[6] || "");
-          const staff = cleanStaffName(row[10]);
+          if (!row || (!row[0] && !row[41])) continue;
+
+          const orderId = String(row[0] || `GCSM-${r}`);
+          const rawStatus = String(row[6] || "");
+          const status = rawStatus === "Completed" ? "Hoàn thành" : (rawStatus || "Hoàn thành");
+          const staff = normalizeStaffName(row[10] || row[9] || row[8]);
           const time = String(row[12] || row[11] || "");
           const paid = Number(String(row[16] || "0").replace(/,/g, "")) || 0;
-          const prodName = String(row[41] || "").trim();
+          const prodName = String(row[41] || row[34] || "").trim();
           const qty = Number(row[42]) || 1;
           const sku = String(row[44] || "GCSM");
-          const rawType = String(row[56] || "").trim();
+          const rawType = String(row[56] || row[34] || "").trim();
           const pts = Number(row[57]) || 0;
 
-          if (pts > 0 || paid > 0) {
-            let normCat = rawType === "Miếng dán có phí" ? "MDCL" : (rawType || "Phụ kiện GCSM");
+          if (pts > 0 || paid > 0 || prodName) {
+            let normCat = rawType === "Miếng dán có phí" ? "MDCL" : (rawType || "Dịch vụ GCSM");
+
             parsedOrders.push({
               id: orderId,
+              source: "GCSM SO",
               time,
-              type: `GCSM SO (${row[34] || "Service"})`,
+              type: `Service Ticket (${row[34] || "GCSM"})`,
               product: prodName,
               staff,
               points: pts,
@@ -578,39 +625,30 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
               status
             });
 
-            if (pts > 0) {
-              addProductItem(sku, prodName, normCat, qty, pts, paid);
-              addStaffScore(staff, normCat, pts);
-            }
+            recordStaff(staff, "GCSM SO", normCat, pts, paid);
+            recordProduct(sku, prodName, normCat, "GCSM SO", staff, qty, pts, paid);
           }
         }
       }
 
       if (parsedOrders.length > 0) {
-        parsedOrders.sort((a, b) => b.time.localeCompare(a.time));
+        parsedOrders.sort((a, b) => String(b.time).localeCompare(String(a.time)));
         appState.orderDetails = parsedOrders;
       }
 
       if (productMap.size > 0) {
-        appState.productDetails = Array.from(productMap.values()).map(p => ({
-          sku: p.sku,
-          name: p.name,
-          category: p.category,
-          qty: p.qty,
-          pointRate: p.qty > 0 ? Number((p.totalPts / p.qty).toFixed(2)) : 1,
-          revenue: p.revenue
-        }));
+        appState.productDetails = Array.from(productMap.values()).sort((a, b) => b.points - a.points);
       }
 
       if (staffMap.size > 0) {
-        appState.staffContributions = Array.from(staffMap.values()).sort(
-          (a, b) => (b.devicePts + b.accPts + b.carePts) - (a.devicePts + a.accPts + a.carePts)
-        );
+        appState.staffContributions = Array.from(staffMap.values())
+          .map(st => ({ ...st, sources: Array.from(st.sources) }))
+          .sort((a, b) => (b.devicePts + b.accPts + b.carePts) - (a.devicePts + a.accPts + a.carePts));
       }
 
-      saveState(file.name);
+      saveState(`Upload file: ${file.name}`);
       renderDashboard();
-      alert("✅ Đã bóc tách & lưu dữ liệu mới nhất từ file: " + file.name);
+      alert("✅ Đã đồng bộ dữ liệu từ file: " + file.name);
     } catch (err) {
       console.error(err);
       alert("❌ Lỗi đọc file Excel. Vui lòng kiểm tra lại định dạng file!");
@@ -619,7 +657,7 @@ document.getElementById("excelUpload").addEventListener("change", function (e) {
   reader.readAsArrayBuffer(file);
 });
 
-// Modal Chỉnh sửa & Lưu Target
+// Modal Chỉnh sửa Target: lưu dữ liệu lần chỉnh cuối cùng
 const targetModal = document.getElementById("targetModal");
 document.getElementById("btnEditTarget").addEventListener("click", () => {
   const grid = document.getElementById("targetInputsGrid");
@@ -628,7 +666,7 @@ document.getElementById("btnEditTarget").addEventListener("click", () => {
     grid.innerHTML += `
       <div class="target-field">
         <label>${item.category} (Hiện đạt: ${item.actual})</label>
-        <input type="number" min="0" data-idx="${idx}" value="${item.target}" />
+        <input type="number" min="0" step="0.5" data-idx="${idx}" value="${item.target}" />
       </div>
     `;
   });
@@ -642,7 +680,7 @@ document.getElementById("btnSaveTarget").addEventListener("click", () => {
     const idx = Number(inp.dataset.idx);
     appState.sales[idx].target = Number(inp.value) || 0;
   });
-  saveState("Điều chỉnh Target thủ công");
+  saveState("Cập nhật Target lần cuối");
   renderDashboard();
   targetModal.classList.add("hidden");
 });
@@ -651,6 +689,7 @@ document.getElementById("btnResetDefault").addEventListener("click", () => {
   if (confirm("Khôi phục toàn bộ dữ liệu & Target về bản gốc của file T11?")) {
     localStorage.removeItem(STORAGE_KEY);
     appState = structuredClone(DEFAULT_DATA);
+    saveState("Khôi phục bản gốc T11");
     renderDashboard();
     targetModal.classList.add("hidden");
   }
@@ -666,27 +705,30 @@ document.getElementById("btnExportReport").addEventListener("click", () => {
 
   const salesLines = appState.sales
     .map(i => `- ${i.category}: ${i.actual}/${i.target} điểm (${i.target > 0 ? ((i.actual / i.target) * 100).toFixed(0) : 100}%)`)
-    .join("\n");
+    .join("
+");
 
   const techLines = appState.technicians.slice(0, 2)
     .map(t => `- ${t.name} (${t.code}): ${t.newVol} điểm năng suất | TAT 1H: ${t.tat1h}`)
-    .join("\n");
+    .join("
+");
 
   const staffLines = appState.staffContributions
     .map(st => {
-      const tot = st.devicePts + st.accPts + st.carePts;
-      return `- ${st.name}: ${tot} điểm (Máy: ${st.devicePts}, PK/IoT: ${st.accPts}, Care/MDCL: ${st.carePts})`;
+      const tot = Number(st.devicePts || 0) + Number(st.accPts || 0) + Number(st.carePts || 0);
+      return `- ${st.name}: ${tot.toFixed(1)} điểm (Máy: ${st.devicePts}, PK/IoT: ${st.accPts}, Care/MDCL: ${st.carePts}) | Doanh thu: ${formatVND(st.revenue)}`;
     })
-    .join("\n");
+    .join("
+");
 
   const summary = `📊 BÁO CÁO VẬN HÀNH - ${appState.shopName.toUpperCase()}
-Mã trạm: ${appState.scCode} | Nguồn: ${appState.lastUpdated}
+Mã trạm: ${appState.scCode} | Cập nhật: ${appState.lastUpdated}
 --------------------------------------------------
 1. KẾT QUẢ BÁN HÀNG (BRANDSHOP):
 - Tổng điểm: ${totalActual} / ${totalTarget} điểm (Đạt ${pct}%)
 ${salesLines}
 
-2. ĐÓNG GÓP DOANH SỐ & ĐIỂM BÁN HÀNG THEO NHÂN SỰ:
+2. ĐÓNG GÓP DOANH SỐ & ĐIỂM BÁN HÀNG THEO NHÂN SỰ (GCSM SO + CENTER SO):
 ${staffLines}
 
 3. CHỈ SỐ DỊCH VỤ & NĂNG SUẤT 2 KỸ THUẬT VIÊN:
