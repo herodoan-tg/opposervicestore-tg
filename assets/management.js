@@ -36,6 +36,46 @@ function mgRenderProducts(){const m=new Map(),add=(r,s)=>{const n=s==='CENTER'?(
 function mgRenderStaff(){const m=new Map(),add=(n,s,p,v)=>{n=mgResolveStaff(n);const k=mgNorm(n),x=m.get(k)||{name:n,c:0,g:0,p:0,v:0};x[s]+=Number(p)||0;x.p+=Number(p)||0;x.v+=Number(v)||0;m.set(k,x);};mgFiltered('CENTER').filter(mgIsCenterSales).forEach(r=>add(r.kpi_staff||r.creator,'c',r.points,r.receivable||r.retail_revenue));mgFiltered('GCSM').forEach(r=>add(r.creator,'g',r.points,r.retail_price));const a=[...m.values()].sort((x,y)=>y.p-x.p),t=a.reduce((s,x)=>s+x.p,0);document.getElementById('mgStaffBody').innerHTML=a.map(x=>'<tr><td class="p-2 font-semibold">'+mgEsc(x.name)+'</td><td class="p-2 text-right">'+mgFmt(x.c)+'</td><td class="p-2 text-right">'+mgFmt(x.g)+'</td><td class="p-2 text-right font-bold text-emerald-700">'+mgFmt(x.p)+'</td><td class="p-2 text-right">'+mgMoney(x.v)+'</td><td class="p-2 text-right">'+mgPct(t?x.p/t:0)+'</td></tr>').join('')||'<tr><td colspan="6" class="p-4 text-center">Không có dữ liệu</td></tr>';}
 function mgRenderService(){const t=currentData.tatKpi||{},k=currentData.klDl||{},a=[['TAT-KS',mgPct(t.tat_ks)],['TAT-GCSM',mgPct(t.tat_gcsm)],['Tỷ lệ khách lẻ',mgPct(k.pct_khach_le)],['Tỷ lệ miếng dán',mgPct(k.ty_le_md)]];document.getElementById('mgServiceCards').innerHTML=a.map(x=>'<div class="bg-white rounded-xl border p-4"><div class="text-xs text-slate-500">'+x[0]+'</div><div class="text-2xl font-extrabold text-emerald-700 mt-1">'+x[1]+'</div></div>').join('');const staff=(currentData.productivity||[]).slice().sort((a,b)=>(b.volume||0)-(a.volume||0));document.getElementById('mgServiceStaff').innerHTML=staff.map(p=>'<tr><td class="p-2 font-semibold">'+mgEsc(p.name)+'</td><td class="p-2 text-right">'+mgFmt(p.volume)+'</td><td class="p-2 text-right">'+mgFmt(p.sua_chua)+'</td><td class="p-2 text-right">'+mgFmt(p.dich_vu_cong_them)+'</td><td class="p-2 text-right">'+mgFmt(p.so_thuong)+'</td></tr>').join('')||'<tr><td colspan="5" class="p-4 text-center text-slate-500">Chưa có dữ liệu năng suất.</td></tr>';}
 function mgRenderAlerts(){const a=[];currentData.categories.filter(c=>c.key!=='TOTAL'&&c.target>0&&c.actual<c.target).forEach(c=>a.push([c.name+' còn thiếu '+mgFmt(c.target-c.actual),'Hoàn thành '+mgPct(c.actual/c.target),c.actual/c.target<.8]));if(!currentData.centerRecords.length)a.push(['Chưa có dữ liệu Center SO','Upload dữ liệu Center SO để theo dõi bán hàng.',true]);if(!currentData.gcsmRecords.length)a.push(['Chưa có dữ liệu GCSM SO','Upload dữ liệu GCSM SO để theo dõi dịch vụ.',true]);if(!a.length)a.push(['Các nhóm KPI đang đạt kế hoạch','Tiếp tục theo dõi tiến độ.',false]);document.getElementById('mgAlerts').innerHTML=a.map(x=>'<div class="rounded-xl border p-3 '+(x[2]?'border-amber-200 bg-amber-50':'border-emerald-200 bg-emerald-50')+'"><div class="font-semibold text-sm">'+mgEsc(x[0])+'</div><div class="text-xs mt-1">'+mgEsc(x[1])+'</div></div>').join('');}
+function mgRenderOverviewInsights(){
+  const root=document.getElementById('mgOverviewInsights');if(!root||!currentData)return;
+  const esc=mgEsc,items=[];
+  const month=document.getElementById('mgTargetMonth')?.value||new Date().toISOString().slice(0,7);
+  const [yy,mm]=month.split('-').map(Number),daysInMonth=new Date(yy,mm,0).getDate();
+  const now=new Date(),isCurrent=now.getFullYear()===yy&&(now.getMonth()+1)===mm;
+  const elapsed=isCurrent?Math.min(now.getDate(),daysInMonth):((new Date(yy,mm,0)<new Date(now.getFullYear(),now.getMonth(),1))?daysInMonth:0);
+  const remaining=Math.max(0,daysInMonth-elapsed);
+  const total=currentData.categories.find(c=>c.key==='TOTAL');
+  if(total&&Number(total.target)>0){
+    const gap=Math.max(0,Number(total.target)-Number(total.actual));
+    const rate=Number(total.actual)/Number(total.target);
+    const needed=remaining>0?gap/remaining:gap;
+    const pace=elapsed>0?Number(total.actual)/elapsed:0;
+    items.push({level:rate>=1?'good':rate<.8?'high':'warn',title:rate>=1?'Đã hoàn thành Target tổng điểm':('Tiến độ tổng điểm đạt '+mgPct(rate)),body:rate>=1?'Tiếp tục duy trì nhịp bán và tập trung giữ chất lượng doanh thu.':'Còn thiếu '+mgFmt(gap)+' điểm. '+(remaining>0?'Cần đạt trung bình '+mgFmt(needed)+' điểm/ngày trong '+remaining+' ngày còn lại.':'Đã hết thời gian tháng; cần rà soát kết quả và kế hoạch bù.'),action:rate>=1?'Duy trì hiệu suất, ưu tiên nhóm hàng có biên độ đóng góp tốt.':(pace>=needed&&elapsed>0?'Tốc độ hiện tại đang đáp ứng nhịp cần thiết; duy trì và kiểm tra hằng ngày.':'Ưu tiên chiến dịch bán theo ngày, giao chỉ tiêu điểm còn thiếu cho từng ca và theo dõi cuối ngày.')});
+  }
+  const behind=currentData.categories.filter(c=>c.key!=='TOTAL'&&Number(c.target)>0&&Number(c.actual)<Number(c.target)).sort((a,b)=>(Number(a.actual)/Number(a.target))-(Number(b.actual)/Number(b.target)));
+  if(behind.length){
+    const c=behind[0],gap=Number(c.target)-Number(c.actual),pct=Number(c.actual)/Number(c.target),perDay=remaining>0?gap/remaining:gap;
+    items.push({level:pct<.8?'high':'warn',title:'Ưu tiên kéo nhóm '+c.name,body:'Đạt '+mgPct(pct)+', còn thiếu '+mgFmt(gap)+' điểm'+(remaining>0?' (cần '+mgFmt(perDay)+' điểm/ngày).':'.'),action:'Tập trung tư vấn đúng nhu cầu ở nhóm '+c.name+', đặt mục tiêu theo ca/ngày và rà soát đơn phát sinh để không bỏ sót điểm.'});
+  } else if(!behind.length) items.push({level:'good',title:'Các nhóm hàng đều đạt Target',body:'Không ghi nhận nhóm hàng nào đang dưới chỉ tiêu.',action:'Duy trì độ phủ sản phẩm, tiếp tục bán kèm phụ kiện và gói dịch vụ phù hợp.'});
+  const center=mgFiltered('CENTER').filter(mgIsCenterSales),gcsm=mgFiltered('GCSM');
+  const staffMap=new Map();
+  const add=(name,points)=>{const resolved=mgResolveStaff(name),key=mgNorm(resolved);if(!key)return;const x=staffMap.get(key)||{name:resolved,points:0,orders:0};x.points+=Number(points)||0;x.orders++;staffMap.set(key,x);};
+  center.forEach(r=>add(r.kpi_staff||r.creator,r.points));gcsm.forEach(r=>add(r.creator,r.points));
+  const staff=[...staffMap.values()].sort((a,b)=>b.points-a.points),top=staff[0],totalStaffPoints=staff.reduce((s,x)=>s+x.points,0);
+  if(top&&staff.length>1){
+    const share=totalStaffPoints?top.points/totalStaffPoints:0;
+    items.push({level:'info',title:'Đóng góp nhân sự & phân bổ bán hàng',body:'Nhân sự dẫn đầu: '+top.name+' với '+mgFmt(top.points)+' điểm ('+mgPct(share)+' tổng điểm giao dịch trong bộ lọc). Có '+staff.length+' nhân sự phát sinh giao dịch.',action:'Chia sẻ cách tư vấn/chốt đơn hiệu quả của nhân sự dẫn đầu; cân bằng cơ hội bán hàng và hỗ trợ nhân sự có ít giao dịch hơn.'});
+  } else if(!staff.length) {
+    items.push({level:'warn',title:'Chưa có giao dịch để đánh giá nhân sự',body:'Không tìm thấy giao dịch phù hợp với bộ lọc hiện tại.',action:'Kiểm tra khoảng ngày, nhân viên đang lọc và dữ liệu Center SO / GCSM SO đã upload.'});
+  }
+  const products=new Map();
+  [...center.map(r=>({...r,_src:'CENTER'})),...gcsm.map(r=>({...r,_src:'GCSM'}))].forEach(r=>{const name=r.model||r.product;if(!name)return;const x=products.get(name)||{name,points:0,qty:0};x.points+=Number(r.points)||0;x.qty+=Number(r.qty)||0;products.set(name,x);});
+  const best=[...products.values()].sort((a,b)=>b.points-a.points)[0];
+  if(best)items.push({level:'info',title:'Sản phẩm đang đóng góp tốt',body:best.name+' dẫn đầu với '+mgFmt(best.points)+' điểm, '+mgFmt(best.qty)+' sản phẩm theo bộ lọc.',action:'Kiểm tra tồn kho và duy trì tư vấn sản phẩm/model bán tốt; kết hợp bán kèm nhóm hàng đang hụt Target.'});
+  const styles={high:'border-rose-200 bg-rose-50',warn:'border-amber-200 bg-amber-50',good:'border-emerald-200 bg-emerald-50',info:'border-sky-200 bg-sky-50'};
+  const labels={high:'Cần ưu tiên',warn:'Cần theo dõi',good:'Tích cực',info:'Gợi ý quản lý'};
+  root.innerHTML=items.map(x=>'<article class="rounded-xl border p-4 '+styles[x.level]+'"><div class="flex items-center justify-between gap-2"><h4 class="font-bold text-sm text-slate-900">'+esc(x.title)+'</h4><span class="shrink-0 text-[10px] font-bold uppercase">'+labels[x.level]+'</span></div><p class="text-xs text-slate-700 mt-2">'+esc(x.body)+'</p><p class="text-xs font-semibold text-slate-800 mt-2">Đề xuất: '+esc(x.action)+'</p></article>').join('');
+}
 function mgRenderAll(){if(!currentData)return;mgApplyTargets();mgPopulateStaff();mgRenderProducts();mgRenderStaff();mgRenderService();mgRenderAlerts();mgTargetEditor();}
 function mgWithFilteredRecords(fn){const c=currentData.centerRecords,g=currentData.gcsmRecords;try{currentData.centerRecords=mgFiltered('CENTER');currentData.gcsmRecords=mgFiltered('GCSM');fn();}finally{currentData.centerRecords=c;currentData.gcsmRecords=g;}}
 function mgRefreshFilteredViews(){if(typeof window.renderCharts==='function')window.renderCharts();if(typeof window.renderTopProducts==='function')window.renderTopProducts();if(typeof window.renderTransactionsTable==='function')window.renderTransactionsTable();}
