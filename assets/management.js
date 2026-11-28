@@ -77,32 +77,38 @@ function mgExportDailyReport(){
 }
 function mgExportExcel(){
   try{
-    const center=mgFiltered('CENTER').filter(r=>String(r.export_type||'').toLowerCase().includes('bán')&&String(r.status||'').toLowerCase().includes('hiệu lực'));
-    const gcsm=mgFiltered('GCSM');
-    const sum=(a,k)=>a.reduce((s,r)=>s+(Number(r[k])||0),0);
-    const cp=sum(center,'points'),gp=sum(gcsm,'points');
-    const cr=sum(center.map(r=>({v:r.receivable||r.retail_revenue})),'v'),gr=sum(gcsm,'retail_price');
-    const cq=sum(center,'qty'),gq=sum(gcsm,'qty');
-    const from=document.getElementById('dashFrom')?.value||'',to=document.getElementById('dashTo')?.value||'',staff=document.getElementById('dashStaff')?.value||'ALL';
-    const period=from||to?(from||'Đầu kỳ')+' đến '+(to||'Hiện tại'):'Toàn bộ dữ liệu';
-    const lines=['📊 BÁO CÁO TỔNG HỢP – OPPO EXPERIENCE & SERVICE STORE TIỀN GIANG','📅 Kỳ: '+period,'👤 Nhân viên: '+(staff==='ALL'?'Toàn cửa hàng':staff),'','🎯 TIẾN ĐỘ KPI',...currentData.categories.filter(x=>x.key!=='TOTAL').map(x=>'• '+x.name+': '+mgFmt(x.actual)+' / '+mgFmt(x.target)+' điểm ('+(x.target?mgPct(x.actual/x.target):'Chưa đặt target')+')'),'','💰 DOANH SỐ & ĐIỂM','• Center SO: '+center.length+' đơn | '+mgFmt(cq)+' sản phẩm | '+mgMoney(cr)+' | '+mgFmt(cp)+' điểm','• GCSM SO: '+gcsm.length+' đơn | '+mgFmt(gq)+' sản phẩm | '+mgMoney(gr)+' | '+mgFmt(gp)+' điểm','• TỔNG: '+(center.length+gcsm.length)+' đơn | '+mgFmt(cq+gq)+' sản phẩm | '+mgMoney(cr+gr)+' | '+mgFmt(cp+gp)+' điểm','','🏆 TOP NHÂN VIÊN THEO ĐIỂM'];
-    const sm=new Map();
-    const add=(n,p,v)=>{n=mgResolveStaff(n);const k=mgNorm(n),x=sm.get(k)||{n,p:0,v:0};x.p+=Number(p)||0;x.v+=Number(v)||0;sm.set(k,x);};
-    center.forEach(r=>add(r.kpi_staff||r.creator,r.points,r.receivable||r.retail_revenue));
-    gcsm.forEach(r=>add(r.creator,r.points,r.retail_price));
-    lines.push(...[...sm.values()].sort((a,b)=>b.p-a.p).slice(0,5).map((x,i)=>(i+1)+'. '+x.n+' – '+mgFmt(x.p)+' điểm – '+mgMoney(x.v)));
-    const pm=new Map();
-    [...center,...gcsm].forEach(r=>{const n=r.model||r.product;if(!n)return;const x=pm.get(n)||{q:0,p:0};x.q+=Number(r.qty)||0;x.p+=Number(r.points)||0;pm.set(n,x);});
-    lines.push('','📦 TOP SẢN PHẨM THEO ĐIỂM',...[...pm.entries()].sort((a,b)=>b[1].p-a[1].p).slice(0,5).map((x,i)=>(i+1)+'. '+x[0]+' – '+mgFmt(x[1].q)+' sản phẩm – '+mgFmt(x[1].p)+' điểm'),'','🕒 Cập nhật: '+new Date().toLocaleString('vi-VN'),'Nguồn: dữ liệu Center SO & GCSM SO trên dashboard.');
-    const report=lines.join('\n');
-    const notify=msg=>{if(typeof showToast==='function')showToast(msg);else alert(msg);};
-    const manualCopy=()=>{const t=document.createElement('textarea');t.value=report;t.setAttribute('readonly','');t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.focus();t.select();t.setSelectionRange(0,t.value.length);let ok=false;try{ok=document.execCommand('copy');}catch(e){}t.remove();if(ok)notify('Đã copy báo cáo. Bro dán vào Zalo gửi sếp nhé.');else{prompt('Trình duyệt không cho phép tự copy. Bro hãy copy nội dung bên dưới:',report);}};
-    if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
-      navigator.clipboard.writeText(report).then(()=>notify('Đã copy báo cáo. Bro dán vào Zalo gửi sếp nhé.')).catch(manualCopy);
-    }else manualCopy();
-  }catch(err){
-    console.error('Xuất báo cáo tổng hợp thất bại:',err);
-    alert('Không thể tạo báo cáo: '+(err&&err.message?err.message:String(err)));
-  }
+    const d=currentData||{},cats=Array.isArray(d.categories)?d.categories:[],total=cats.find(x=>x.key==='TOTAL')||{actual:0,target:0};
+    const center=(d.centerRecords||[]).filter(r=>String(r.export_type||'').toLowerCase().includes('bán')&&String(r.status||'').toLowerCase().includes('hiệu lực'));
+    const gcsm=d.gcsmRecords||[],sum=(a,k)=>a.reduce((v,r)=>v+(Number(r[k])||0),0);
+    const centerRevenue=sum(center.map(r=>({v:r.receivable||r.retail_revenue})),'v'),gcsmRevenue=sum(gcsm,'retail_price');
+    const productivity=Array.isArray(d.productivity)?d.productivity:[],kpi=Array.isArray(d.kpiReport)?d.kpiReport:[];
+    const tat=d.tatKpi||{},kl=d.klDl||{},pct=v=>(Number(v||0)*100).toFixed(1)+'%';
+    const lines=[
+      '📊 BÁO CÁO TỔNG QUAN KPI – OPPO EXPERIENCE & SERVICE STORE TIỀN GIANG',
+      '📅 Thời điểm báo cáo: '+new Date().toLocaleString('vi-VN'),
+      '📁 Dữ liệu: '+(d.meta?.fileName||'Dashboard hiện tại'),'',
+      '🎯 1. TỔNG QUAN KẾT QUẢ KPI',
+      '• Tổng điểm: '+mgFmt(total.actual)+' / '+mgFmt(total.target)+' điểm'+(Number(total.target)>0?' – đạt '+pct(total.actual/total.target):''),
+      ...cats.filter(x=>x.key!=='TOTAL').map(x=>'• '+x.name+': '+mgFmt(x.actual)+' / '+mgFmt(x.target)+' điểm'+(Number(x.target)>0?' – đạt '+pct(x.actual/x.target):'')),
+      '',
+      '💰 2. DOANH THU & HOẠT ĐỘNG',
+      '• Doanh thu ghi nhận: '+mgMoney(centerRevenue+gcsmRevenue),
+      '• Center SO: '+center.length+' giao dịch bán hiệu lực | '+mgMoney(centerRevenue),
+      '• GCSM SO: '+gcsm.length+' giao dịch | '+mgMoney(gcsmRevenue),
+      '• A7 Pro: '+mgFmt(d.a7ProCount||0)+' máy',
+      '• Service Volume: '+mgFmt(productivity.reduce((v,x)=>v+(Number(x.volume)||0),0)),
+      '',
+      '👥 3. KẾT QUẢ KPI THEO NHÂN VIÊN'
+    ];
+    if(kpi.length) lines.push(...kpi.map(x=>'• '+(x.full_name||x.name)+': lũy kế '+mgFmt(x.accumulated)+' / '+mgFmt(x.target)+' ('+pct(x.rate)+') – '+(x.status||'Chưa có trạng thái')));
+    else lines.push('• Chưa có bảng KPI nhân viên trong dữ liệu.');
+    lines.push('','🛠️ 4. NĂNG SUẤT SERVICE');
+    if(productivity.length) lines.push(...productivity.map(x=>'• '+x.name+': Volume '+mgFmt(x.volume)+' | Sửa chữa '+mgFmt(x.sua_chua)+' | Dịch vụ cộng thêm '+mgFmt(x.dich_vu_cong_them)+' | Số thưởng '+mgFmt(x.so_thuong)));
+    else lines.push('• Chưa có dữ liệu năng suất Service.');
+    lines.push('','📌 5. CHỈ SỐ VẬN HÀNH','• TAT-KS: '+pct(tat.tat_ks),'• TAT-GCSM: '+pct(tat.tat_gcsm),'• Tỷ lệ khách lẻ: '+pct(kl.pct_khach_le),'• Tỷ lệ miếng dán: '+pct(kl.ty_le_md),'','Nguồn: Trang Tổng quan KPI và dữ liệu Center SO / GCSM SO trên dashboard.');
+    const report=lines.join('\n'),notify=msg=>{if(typeof showToast==='function')showToast(msg);else alert(msg);};
+    const fallback=()=>{const box=document.createElement('textarea');box.value=report;box.readOnly=true;box.style.cssText='position:fixed;left:5%;top:10%;width:90%;height:75%;z-index:99999;background:white;color:#111;padding:16px;border:2px solid #334155;border-radius:8px';document.body.appendChild(box);box.focus();box.select();const done=()=>{box.remove();};box.addEventListener('keydown',e=>{if(e.key==='Escape')done();});const note=document.createElement('div');note.textContent='Báo cáo đã tạo — nhấn Ctrl+C để sao chép, Esc để đóng.';note.style.cssText='position:fixed;top:4%;left:5%;z-index:100000;background:#0f172a;color:white;padding:10px';document.body.appendChild(note);box.addEventListener('blur',()=>{});};
+    if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function')navigator.clipboard.writeText(report).then(()=>notify('Đã copy báo cáo tổng quan KPI. Bro dán vào Zalo gửi sếp nhé.')).catch(fallback);else fallback();
+  }catch(err){console.error('Xuất báo cáo tổng quan KPI thất bại:',err);alert('Không thể tạo báo cáo KPI: '+(err&&err.message?err.message:String(err)));}
 }
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('mgTargetMonth').value=new Date().toISOString().slice(0,7);document.getElementById('mgDailyDate').value=new Date().toISOString().slice(0,10);const base=window.renderAll,baseCharts=window.renderCharts,baseProducts=window.renderTopProducts,baseTransactions=window.renderTransactionsTable;if(typeof baseCharts==='function')window.renderCharts=function(){mgWithFilteredRecords(baseCharts);};if(typeof baseProducts==='function')window.renderTopProducts=function(){mgWithFilteredRecords(baseProducts);};if(typeof baseTransactions==='function')window.renderTransactionsTable=function(){mgWithFilteredRecords(baseTransactions);};if(typeof base==='function')window.renderAll=function(){mgApplyTargets();base();mgRenderAll();};['dashFrom','dashTo','dashStaff'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{mgRenderAll();mgRefreshFilteredViews();}));document.getElementById('dashClearFilters').addEventListener('click',()=>{['dashFrom','dashTo'].forEach(id=>document.getElementById(id).value='');document.getElementById('dashStaff').value='ALL';mgRenderAll();});document.getElementById('mgCenterFile').addEventListener('change',e=>{if(e.target.files[0])mgUpload(e.target.files[0],'CENTER');e.target.value='';});document.getElementById('mgGcsmFile').addEventListener('change',e=>{if(e.target.files[0])mgUpload(e.target.files[0],'GCSM');e.target.value='';});document.getElementById('mgTargetMonth').addEventListener('change',()=>{mgApplyTargets();mgTargetEditor();});document.getElementById('mgSaveTargets').addEventListener('click',mgSaveTargets);document.getElementById('mgResetTargets').addEventListener('click',mgResetTargets);document.getElementById('mgExportExcel').addEventListener('click',mgExportExcel);document.getElementById('mgExportDaily').addEventListener('click',mgExportDailyReport);mgRenderAll();});
