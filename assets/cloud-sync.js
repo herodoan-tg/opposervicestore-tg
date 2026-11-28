@@ -138,6 +138,20 @@ async function cloudStartRealtime() {
 async function cloudInitialize() {
   cloudUi();
   cloudClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  cloudClient.auth.onAuthStateChange(async (event, sessionNow) => {
+    if (event === 'SIGNED_OUT') {
+      cloudUser = null;
+      document.getElementById('cloudLoginGate').classList.remove('hidden');
+    }
+    if (event === 'SIGNED_IN' && sessionNow && (!cloudUser || cloudUser.id !== sessionNow.user.id)) {
+      cloudUser = sessionNow.user;
+      try {
+        await cloudLoadProfile(); await cloudLoadState();
+        document.getElementById('cloudLoginGate').classList.add('hidden');
+        await cloudStartRealtime();
+      } catch (err) { cloudMessage(err.message, true); await cloudClient.auth.signOut(); }
+    }
+  });
   const { data: { session } } = await cloudClient.auth.getSession();
   if (!session) return;
   cloudUser = session.user;
@@ -150,17 +164,6 @@ async function cloudInitialize() {
     cloudMessage(err.message, true);
     await cloudClient.auth.signOut();
   }
-  cloudClient.auth.onAuthStateChange(async (event, sessionNow) => {
-    if (event === 'SIGNED_OUT') { document.getElementById('cloudLoginGate').classList.remove('hidden'); }
-    if (event === 'SIGNED_IN' && sessionNow && (!cloudUser || cloudUser.id !== sessionNow.user.id)) {
-      cloudUser = sessionNow.user;
-      try {
-        await cloudLoadProfile(); await cloudLoadState();
-        document.getElementById('cloudLoginGate').classList.add('hidden');
-        await cloudStartRealtime();
-      } catch (err) { cloudMessage(err.message, true); await cloudClient.auth.signOut(); }
-    }
-  });
 }
 document.addEventListener('DOMContentLoaded', () => {
   cloudInitialize().catch(err => { console.error(err); cloudMessage('Không khởi tạo được kết nối cloud: ' + err.message, true); });
