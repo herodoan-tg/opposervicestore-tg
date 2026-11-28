@@ -8,7 +8,7 @@ const mgFmt=n=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1}).format(N
 const mgMoney=n=>new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0}).format(Number(n)||0);
 const mgPct=n=>(Number(n||0)*100).toFixed(1)+'%';
 const mgEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const mgNorm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase().replace(/\([^)]*\)/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const mgNorm=v=>String(v||'').normalize('NFD').replace(/[Đđ]/g,'d').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\([^)]*\)/g,'').replace(/[^a-z0-9]+/g,' ').trim();
 function mgResolveStaff(v){const raw=String(v||'').trim();if(!raw)return'Chưa xác định';const a=[...(currentData.productivity||[]).map(x=>x.name),...(currentData.kpiReport||[]).map(x=>x.full_name||x.name)];return a.find(x=>mgNorm(x)===mgNorm(raw))||raw.replace(/（[^）]*）|\([^)]*\)/g,'').trim();}
 function mgFiltered(src){const a=src==='CENTER'?currentData.centerRecords:currentData.gcsmRecords,from=document.getElementById('dashFrom').value,to=document.getElementById('dashTo').value,staff=document.getElementById('dashStaff').value;return a.filter(r=>{const d=String(r.date||r.time||'').slice(0,10);if((from||to)&&!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;if(from&&d<from)return false;if(to&&d>to)return false;if(staff!=='ALL'){const n=src==='CENTER'?mgResolveStaff(r.kpi_staff||r.creator):mgResolveStaff(r.creator);if(mgNorm(n)!==mgNorm(staff))return false;}return true;});}
 function mgPersist(){try{localStorage.setItem('oppo_shop_dashboard_latest_data_v1',JSON.stringify(currentData));if(typeof updateStorageBadge==='function')updateStorageBadge(true);return true;}catch(e){return false;}}
@@ -42,7 +42,7 @@ function mgRefreshFilteredViews(){if(typeof window.renderCharts==='function')win
 function mgDate(v){if(v instanceof Date){const d=new Date(v.getTime()-v.getTimezoneOffset()*60000);return d.toISOString().slice(0,16).replace('T',' ');}return String(v||'').slice(0,19);}
 function mgNum(v){const n=typeof v==='number'?v:parseFloat(String(v??0).replace(/,/g,''));return Number.isFinite(n)?n:0;}
 function mgText(v){return v==null?'':String(v).trim();}
-function mgHeaderKey(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function mgHeaderKey(v){return String(v??'').normalize('NFD').replace(/[Đđ]/g,'d').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
 function mgFindHeader(sheet,src){
   const grid=XLSX.utils.sheet_to_json(sheet,{header:1,defval:null,blankrows:false});
   const sets=src==='CENTER'?[['don hang chi tiet','don hang tong','order details'],['ngay xuat ban','ngay ban','sales date'],['nguoi len don','created by','seller']]:[['sales order no','sales order number','so ban hang'],['created by','nguoi tao','seller'],['sales product name','product name','ten san pham']];
@@ -91,7 +91,35 @@ function mgUpload(file,src){
     let sheetName=null,header=null;for(const n of candidates){const h=mgFindHeader(wb.Sheets[n],src);if(h){sheetName=n;header=h;break;}}
     if(!sheetName)throw Error('Không nhận diện được hàng tiêu đề. Kiểm tra file có sheet '+(src==='CENTER'?'Center SO':'GCSM SO')+' và các cột mã đơn/ngày/nhân viên/sản phẩm.');
     const headers=header.headers.map(v=>String(v??'').trim()),rawRows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,range:header.row+1,defval:null,blankrows:false,cellDates:true}),rows=rawRows.map(cells=>{const row={};headers.forEach((h,i)=>{if(h)row[h]=cells[i]??null;});return row;}),a=[];
-    if(src==='CENTER'){for(const row of rows){const order=mgOrderValue(row,headers,'CENTER');if(!order)continue;const date=mgDateValue(mgGet(row,headers,['Ngày xuất bán','Ngày bán','Sales date','Ngày'])),creator=mgText(mgGet(row,headers,['Người lên đơn','Created by','Người bán'])),kpi=mgText(mgGet(row,headers,['Name KPI 1','KPI staff','Nhân viên KPI']));a.push({order_no:mgText(mgGet(row,headers,['Đơn hàng tổng','Order No','Order number']))||mgText(order),shop:mgText(mgGet(row,headers,['Tên Brandshop','Brandshop'])),date:date.slice(0,10),time:date,category:mgText(mgGet(row,headers,['Danh mục','Category'])),product:mgText(mgGet(row,headers,['Tên sản phẩm','Product name'])),qty:mgNum(mgGet(row,headers,['Số lượng','Quantity'])),retail_revenue:mgNum(mgGet(row,headers,['Doanh thu bán lẻ','Retail revenue'])),receivable:mgNum(mgGet(row,headers,['Phải thu khách hàng','Receivable'])),creator,kpi_staff:kpi||creator,export_type:mgText(mgGet(row,headers,['Loại xuất','Export type'])),status:mgText(mgGet(row,headers,['Trạng thái','Status'])),model:mgText(mgGet(row,headers,['Model'])),type:mgText(mgGet(row,headers,['Type','Nhóm hàng'])),points:mgNum(mgGet(row,headers,['Điểm','Points']))});}}
+    if(src==='CENTER'){
+      for(const row of rows){
+        const order=mgOrderValue(row,headers,'CENTER');
+        if(!order)continue;
+        const product=mgText(mgGet(row,headers,['Tên sản phẩm','Product name']));
+        const itemCode=mgText(mgGet(row,headers,['Mã hàng','Mã hàng theo màu','Product code']));
+        // This export has one order-summary row followed by item-detail rows.
+        // Keep item rows only to prevent duplicate order-level revenue.
+        if(!product&&!itemCode)continue;
+        const date=mgDateValue(mgGet(row,headers,['Ngày xuất bán','Ngày bán','Sales date','Ngày']));
+        const creator=mgText(mgGet(row,headers,['Người lên đơn','Created by','Người bán']));
+        const kpi=mgText(mgGet(row,headers,['Name KPI 1','KPI staff','Nhân viên KPI']));
+        a.push({
+          order_no:mgText(mgGet(row,headers,['Đơn hàng tổng','Order No','Order number']))||mgText(order),
+          shop:mgText(mgGet(row,headers,['Tên Brandshop','Brandshop'])),
+          date:date.slice(0,10),time:date,
+          category:mgText(mgGet(row,headers,['Danh mục','Category'])),product,
+          qty:mgNum(mgGet(row,headers,['Số lượng','Quantity'])),
+          retail_revenue:mgNum(mgGet(row,headers,['Doanh thu bán lẻ','Retail revenue'])),
+          receivable:mgNum(mgGet(row,headers,['Phải thu khách hàng','Receivable'])),
+          creator,kpi_staff:kpi||creator,
+          export_type:mgText(mgGet(row,headers,['Loại xuất','Export type']))||'Bán',
+          status:mgText(mgGet(row,headers,['Trạng thái','Status']))||'Hiệu lực',
+          model:itemCode||product,
+          type:mgText(mgGet(row,headers,['Danh mục','Category','Type','Nhóm hàng'])),
+          points:mgNum(mgGet(row,headers,['Total KPI','Điểm','Points']))
+        });
+      }
+    }
     else{for(const row of rows){const order=mgOrderValue(row,headers,'GCSM');if(!order)continue;const date=mgDateValue(mgGet(row,headers,['Sales time','Created on','Ngày tạo','Ngày bán'])),creator=mgText(mgGet(row,headers,['Created by','Người tạo','Seller'])).split('（')[0].split('(')[0].trim();a.push({order_no:mgText(order),shop:mgText(mgGet(row,headers,['Name of service center','Service center'])),status:mgText(mgGet(row,headers,['Order status','Status'])),creator,time:date,date:date.slice(0,10),payment:mgText(mgGet(row,headers,['Payment method']))||'Khác',paid_amount:mgNum(mgGet(row,headers,['Paid amount (receivable after deduction)','Paid amount','Receivable'])),retail_price:mgNum(mgGet(row,headers,['Retail price','Price'])),product:mgText(mgGet(row,headers,['Sales Product Name','Product name'])),qty:mgNum(mgGet(row,headers,['Quantity','Qty'])),model:mgText(mgGet(row,headers,['Marketing model','Model'])),type:mgText(mgGet(row,headers,['Type','Product type']))||'Phụ kiện / Khác',points:mgNum(mgGet(row,headers,['Điểm','Points']))});}}
     if(!a.length)throw Error('Đã tìm thấy sheet "'+sheetName+'" nhưng không đọc được mã đơn. Các cột tiêu đề: '+headers.filter(Boolean).slice(0,40).join(' | ')+'. Kiểm tra cột mã đơn hoặc gửi ảnh hàng tiêu đề để bổ sung nhận diện.');
     const key=src==='CENTER'?'centerRecords':'gcsmRecords',old=currentData[key],metaKey=src==='CENTER'?'centerFileName':'gcsmFileName',oldMeta=currentData.meta[metaKey],oldUpdated=currentData.meta.uploadedAt;currentData[key]=a;currentData.meta[metaKey]=file.name;currentData.meta.uploadedAt='Cập nhật '+new Date().toLocaleString('vi-VN');
