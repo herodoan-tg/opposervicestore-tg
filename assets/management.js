@@ -51,7 +51,21 @@ function mgFindHeader(sheet,src){
   return bestScore>=2?best:null;
 }
 function mgGet(row,headers,aliases){const normalized=headers.map(mgHeaderKey);for(const alias of aliases){const a=mgHeaderKey(alias),i=normalized.findIndex(h=>h===a||h.includes(a));if(i>=0){const key=headers[i];if(row[key]!==undefined&&row[key]!==null&&String(row[key]).trim()!=='')return row[key];}}return null;}
-function mgOrderValue(row,headers,src){const aliases=src==='CENTER'?['Mã đơn hàng','Mã đơn','Số đơn hàng','Số đơn','Mã giao dịch','Mã đơn bán hàng','Đơn hàng chi tiết','Đơn hàng tổng','Order No','Order number','Order ID','Order Code','Order details','Sales order']:['Sales order No.','Sales order number','Sales order No','SO number','Order ID','Order Code','Mã đơn hàng','Mã đơn','Số đơn hàng','Mã giao dịch'];let v=mgGet(row,headers,aliases);if(v!==null&&String(v).trim())return v;const keys=headers.map(mgHeaderKey);const i=keys.findIndex(h=>((h.includes('ma')||h.includes('so')||h.includes('order'))&&(h.includes('don')||h.includes('order')||h.includes('giao dich'))&&!h.includes('ngay'));if(i>=0&&row[headers[i]]!==undefined&&row[headers[i]]!==null&&String(row[headers[i]]).trim())return row[headers[i]];return null;}
+function mgOrderValue(row,headers,src){
+  const aliases=src==='CENTER'
+    ? ['Mã đơn hàng','Mã đơn','Số đơn hàng','Số đơn','Mã giao dịch','Mã đơn bán hàng','Đơn hàng chi tiết','Đơn hàng tổng','Order No','Order number','Order ID','Order Code','Order details','Sales order']
+    : ['Sales order No.','Sales order number','Sales order No','SO number','Order ID','Order Code','Mã đơn hàng','Mã đơn','Số đơn hàng','Mã giao dịch'];
+  const value=mgGet(row,headers,aliases);
+  if(value!==null&&String(value).trim())return value;
+  const keys=headers.map(mgHeaderKey);
+  const i=keys.findIndex(h=>
+    ['ma','so','order'].some(t=>h.includes(t)) &&
+    ['don','order','giao dich'].some(t=>h.includes(t)) &&
+    !h.includes('ngay')
+  );
+  if(i>=0&&row[headers[i]]!==undefined&&row[headers[i]]!==null&&String(row[headers[i]]).trim())return row[headers[i]];
+  return null;
+}
 function mgDateValue(v){if(v instanceof Date)return mgDate(v);if(typeof v==='number'&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);if(d)return String(d.y)+'-'+String(d.m).padStart(2,'0')+'-'+String(d.d).padStart(2,'0')+' '+String(d.H||0).padStart(2,'0')+':'+String(d.M||0).padStart(2,'0');}const s=String(v??'').trim();if(!s)return '';const m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})(.*)$/);if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')+(m[4]?' '+m[4].trim():'');return s.slice(0,19);}
 function mgUpload(file,src){
   if(!file)return;const status=document.getElementById(src==='CENTER'?'mgCenterStatus':'mgGcsmStatus');if(status)status.textContent='Đang đọc file '+file.name+'…';
