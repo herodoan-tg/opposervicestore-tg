@@ -4,9 +4,252 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OPPO Experience & Service Store - KPI Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Thư viện đọc Excel & Biểu đồ (có fallback dự phòng) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: #e2e8f0;
+      --primary: #008a4b;
+      --primary-light: #e6f6ee;
+      --primary-hover: #006e3c;
+      --accent-blue: #2563eb;
+      --accent-amber: #d97706;
+      --danger: #dc2626;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page) !important;
+      color: var(--text-main) !important;
+      line-height: 1.5;
+    }
+
+    .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-badge {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 1px;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+    .brand h1 { font-size: 18px; font-weight: 700; color: var(--text-main); }
+    .subtitle { font-size: 13px; color: var(--text-muted); }
+
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    /* Nút Upload phủ input trực tiếp - bấm là ăn ngay 100% */
+    .upload-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      background: var(--primary);
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .upload-wrapper:hover { background: var(--primary-hover); }
+    .upload-wrapper input[type="file"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-success:hover { background: #047857; }
+    .btn-secondary { background: #f1f5f9; color: var(--text-main); border-color: var(--border-color); }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-outline-danger { background: #fff; color: var(--danger); border-color: #fecaca; }
+    .btn-outline-danger:hover { background: #fef2f2; }
+
+    /* Thanh Tab điều hướng */
+    .tab-bar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 28px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 13px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--primary); background: var(--bg-subtle); }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .container { max-width: 1440px; margin: 22px auto; padding: 0 24px 40px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .card-header h2 { font-size: 16.5px; font-weight: 700; color: var(--text-main); }
+    .card-header h3 { font-size: 15px; font-weight: 700; color: var(--text-main); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .kpi-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-card.blue { border-left-color: var(--accent-blue); }
+    .stat-card.amber { border-left-color: var(--accent-amber); }
+    .stat-label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .stat-value { font-size: 22px; font-weight: 800; color: var(--text-main); margin: 6px 0 4px; }
+    .stat-sub { font-size: 12.5px; color: var(--primary); font-weight: 600; }
+
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; padding: 14px 20px; }
+    .filter-group, .inline-filters, .btn-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filter-group label { font-size: 13.5px; font-weight: 600; }
+
+    select, .search-input, .target-input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13.5px;
+      background: #ffffff;
+      color: var(--text-main);
+    }
+    .target-input { width: 150px; font-weight: 600; text-align: right; }
+
+    .table-responsive { overflow-x: auto; }
+    .max-h-600 { max-height: 600px; overflow-y: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .data-table th {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-weight: 700;
+      text-align: left;
+      padding: 11px 14px;
+      border-bottom: 2px solid var(--border-color);
+      position: sticky;
+      top: 0;
+    }
+    .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); }
+    .data-table tbody tr:hover { background: #f8fafc; }
+    .empty-state { text-align: center; padding: 28px !important; color: var(--text-muted) !important; font-style: italic; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .badge-info { background: var(--primary-light); color: var(--primary); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .badge-sheet { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+    .badge-gcsm { background: #dbeafe; color: #1d4ed8; }
+    .badge-center { background: #dcfce7; color: #15803d; }
+
+    .status-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+    .pill-good { background: #dcfce7; color: #15803d; }
+    .pill-warn { background: #fef3c7; color: #b45309; }
+    .pill-bad  { background: #fee2e2; color: #b91c1c; }
+
+    .summary-strip { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
+    .chart-box { position: relative; height: 320px; width: 100%; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -19,13 +262,11 @@
     </div>
 
     <div class="header-actions">
-      <label for="excelUpload" class="btn btn-primary">
+      <div class="upload-wrapper">
         <span>📂 Tải lên file Excel KPI</span>
-        <input type="file" id="excelUpload" accept=".xlsx, .xls" hidden />
-      </label>
-      <button id="btnClearStorage" class="btn btn-outline-danger" title="Xóa dữ liệu đã lưu trong trình duyệt">
-        🗑️ Xóa dữ liệu lưu
-      </button>
+        <input type="file" id="excelUpload" accept=".xlsx,.xls" />
+      </div>
+      <button id="btnClearStorage" class="btn btn-outline-danger">🗑️ Xóa dữ liệu lưu</button>
     </div>
   </header>
 
@@ -38,14 +279,13 @@
   </nav>
 
   <main class="container">
-    <!-- TAB 1: TỔNG QUAN & BẢNG BÁO CÁO KPI (SHEET TỔNG HỢP) -->
+    <!-- TAB 1 -->
     <section id="tab-overview" class="tab-content active">
       <div class="kpi-cards" id="overviewCards"></div>
-
       <div class="card">
         <div class="card-header">
           <h2>📋 Bảng Báo Cáo KPI / KPI报表 (Sheet Tổng Hợp)</h2>
-          <span class="badge-info" id="overviewStatusBadge">Dữ liệu tự động đồng bộ</span>
+          <span class="badge-info" id="sheetDebugBadge">Sẵn sàng nhận file</span>
         </div>
         <div class="table-responsive">
           <table class="data-table" id="kpiSummaryTable">
@@ -78,7 +318,7 @@
       </div>
     </section>
 
-    <!-- TAB 2: ĐÁNH GIÁ ĐÓNG GÓP DOANH SỐ NHÂN SỰ + CHI TIẾT SẢN PHẨM (GCSM SO & CENTER SO) -->
+    <!-- TAB 2 -->
     <section id="tab-staff-product" class="tab-content">
       <div class="filter-bar card">
         <div class="filter-group">
@@ -99,9 +339,7 @@
 
       <div class="grid-2">
         <div class="card">
-          <div class="card-header">
-            <h2>🏆 Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự</h2>
-          </div>
+          <div class="card-header"><h2>🏆 Đánh Giá Đóng Góp Doanh Số & Điểm Bán Hàng Theo Nhân Sự</h2></div>
           <div class="table-responsive">
             <table class="data-table" id="staffContributionTable">
               <thead>
@@ -114,17 +352,12 @@
                   <th>Tỷ Trọng (%)</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr><td colspan="6" class="empty-state">Chưa có dữ liệu</td></tr>
-              </tbody>
+              <tbody><tr><td colspan="6" class="empty-state">Chưa có dữ liệu</td></tr></tbody>
             </table>
           </div>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <h3>📊 Biểu Đồ Đóng Góp Doanh Số Nhân Sự</h3>
-          </div>
+          <div class="card-header"><h3>📊 Biểu Đồ Đóng Góp Doanh Số Nhân Sự</h3></div>
           <div class="chart-box"><canvas id="chartStaffSales"></canvas></div>
         </div>
       </div>
@@ -146,15 +379,13 @@
                 <th>Doanh Thu (VNĐ)</th>
               </tr>
             </thead>
-            <tbody>
-              <tr><td colspan="6" class="empty-state">Chưa có dữ liệu</td></tr>
-            </tbody>
+            <tbody><tr><td colspan="6" class="empty-state">Chưa có dữ liệu</td></tr></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- TAB 3: CHI TIẾT ĐƠN HÀNG & PHIẾU GIAO DỊCH (GCSM SO & CENTER SO) -->
+    <!-- TAB 3 -->
     <section id="tab-orders" class="tab-content">
       <div class="card">
         <div class="card-header">
@@ -168,7 +399,7 @@
             <select id="filterOrderStaff">
               <option value="ALL">Tất cả Nhân Viên</option>
             </select>
-            <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã đơn, SĐT, tên KH, SP..." />
+            <input type="text" id="searchOrderInput" class="search-input" placeholder="🔍 Tìm mã đơn, nhân viên, SP..." />
           </div>
         </div>
         <div class="summary-strip" id="orderSummaryStrip">Hiển thị 0 giao dịch</div>
@@ -185,18 +416,15 @@
                 <th>Thành Tiền (VNĐ)</th>
               </tr>
             </thead>
-            <tbody>
-              <tr><td colspan="7" class="empty-state">Chưa có dữ liệu đơn hàng</td></tr>
-            </tbody>
+            <tbody><tr><td colspan="7" class="empty-state">Chưa có dữ liệu đơn hàng</td></tr></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- TAB 4: TAT - ĐÁNH GIÁ KPI SERVICE 2025 (SHEET TỔNG THỂ) -->
+    <!-- TAB 4 -->
     <section id="tab-tat" class="tab-content">
       <div class="kpi-cards" id="tatHighlightCards"></div>
-
       <div class="card">
         <div class="card-header">
           <h2>⏱️ Bảng Chỉ Số ĐÁNH GIÁ KPI SERVICE 2025 (Sheet Tổng Thể)</h2>
@@ -214,33 +442,29 @@
                 <th>Đánh Giá</th>
               </tr>
             </thead>
-            <tbody>
-              <tr><td colspan="6" class="empty-state">Chưa có dữ liệu mục ĐÁNH GIÁ KPI SERVICE 2025</td></tr>
-            </tbody>
+            <tbody><tr><td colspan="6" class="empty-state">Chưa có dữ liệu mục ĐÁNH GIÁ KPI SERVICE 2025</td></tr></tbody>
           </table>
         </div>
       </div>
-
       <div class="card">
         <div class="card-header"><h3>📉 Biểu Đồ So Sánh Chỉ Số Service & TAT</h3></div>
         <div class="chart-box"><canvas id="chartTatComparison"></canvas></div>
       </div>
     </section>
 
-    <!-- TAB 5: CHỈNH SỬA TARGET & LƯU TRỮ -->
+    <!-- TAB 5 -->
     <section id="tab-targets" class="tab-content">
       <div class="card">
         <div class="card-header">
           <div>
             <h2>🎯 Thiết Lập & Chỉnh Sửa Target KPI</h2>
-            <p class="sub-note" id="targetLastSavedNote">Thay đổi sau khi bấm "Lưu Target" sẽ được lưu cố định cho lần truy cập tiếp theo.</p>
+            <p class="subtitle" id="targetLastSavedNote">Thay đổi sau khi bấm "Lưu Target" sẽ được lưu cố định cho lần truy cập tiếp theo.</p>
           </div>
           <div class="btn-group">
             <button id="btnResetTargets" class="btn btn-secondary">↺ Khôi phục theo file Excel</button>
             <button id="btnSaveTargets" class="btn btn-success">💾 Lưu Target</button>
           </div>
         </div>
-
         <div class="table-responsive">
           <table class="data-table" id="targetEditTable">
             <thead>
@@ -253,9 +477,7 @@
                 <th>% Đạt Theo Target Mới</th>
               </tr>
             </thead>
-            <tbody>
-              <tr><td colspan="6" class="empty-state">Tải file Excel để hiển thị danh sách Target có thể chỉnh sửa</td></tr>
-            </tbody>
+            <tbody><tr><td colspan="6" class="empty-state">Tải file Excel để hiển thị danh sách Target</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -263,6 +485,173 @@
   </main>
 
   <div id="toast" class="toast"></div>
-  <script src="app.js"></script>
-</body>
-</html>
+
+  <script>
+    const STORAGE_KEYS = {
+      UPLOADED_DATA: 'oppo_kpi_dashboard_data_v3',
+      SAVED_TARGETS: 'oppo_kpi_custom_targets_v3'
+    };
+
+    let appState = { fileName: '', uploadedAt: '', kpiSummary: [], tatService: [], orders: [] };
+    let customTargets = {};
+    let charts = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+      });
+
+      document.getElementById('excelUpload').addEventListener('change', handleFileUpload);
+      document.getElementById('btnClearStorage').addEventListener('click', () => {
+        if (!confirm('Xóa toàn bộ dữ liệu đã lưu trên trình duyệt?')) return;
+        localStorage.removeItem(STORAGE_KEYS.UPLOADED_DATA);
+        localStorage.removeItem(STORAGE_KEYS.SAVED_TARGETS);
+        location.reload();
+      });
+
+      document.getElementById('filterSourceStaff').addEventListener('change', renderStaffAndProducts);
+      document.getElementById('filterEmployeeName').addEventListener('change', renderStaffAndProducts);
+      document.getElementById('searchProductInput').addEventListener('input', renderStaffAndProducts);
+
+      document.getElementById('filterOrderSheet').addEventListener('change', renderOrdersTable);
+      document.getElementById('filterOrderStaff').addEventListener('change', renderOrdersTable);
+      document.getElementById('searchOrderInput').addEventListener('input', renderOrdersTable);
+
+      document.getElementById('btnSaveTargets').addEventListener('click', saveTargetsToStorage);
+      document.getElementById('btnResetTargets').addEventListener('click', () => {
+        customTargets = {};
+        localStorage.removeItem(STORAGE_KEYS.SAVED_TARGETS);
+        document.getElementById('targetLastSavedNote').textContent = '↺ Đã khôi phục Target theo file Excel.';
+        renderAll();
+        showToast('Đã khôi phục Target theo file Excel');
+      });
+
+      loadSavedTargets();
+      loadSavedUploadData();
+    });
+
+    function loadSavedTargets() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.SAVED_TARGETS);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          customTargets = parsed.targets || {};
+          if (parsed.lastSavedAt) {
+            document.getElementById('targetLastSavedNote').textContent = `✅ Lần lưu Target gần nhất: ${parsed.lastSavedAt}`;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function loadSavedUploadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.UPLOADED_DATA);
+        if (raw) {
+          appState = JSON.parse(raw);
+          document.getElementById('lastUpdatedText').textContent =
+            `📂 Dữ liệu lưu gần nhất: ${appState.fileName} (${appState.uploadedAt})`;
+          populateEmployeeDropdowns();
+          renderAll();
+        }
+      } catch (e) {}
+    }
+
+    function saveTargetsToStorage() {
+      const now = new Date().toLocaleString('vi-VN');
+      document.querySelectorAll('.target-input').forEach(inp => {
+        customTargets[inp.dataset.key] = parseNumber(inp.value);
+      });
+      localStorage.setItem(STORAGE_KEYS.SAVED_TARGETS, JSON.stringify({ targets: customTargets, lastSavedAt: now }));
+      document.getElementById('targetLastSavedNote').textContent = `✅ Đã lưu Target lần cuối lúc: ${now}`;
+      renderAll();
+      showToast('💾 Đã lưu cấu hình Target thành công!');
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (typeof XLSX === 'undefined') {
+        alert('Thư viện đọc Excel đang tải chậm, vui lòng F5 lại trang và thử lại!');
+        return;
+      }
+
+      showToast(`⏳ Đang xử lý file "${file.name}"...`);
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+
+          document.getElementById('sheetDebugBadge').textContent = `Sheets: ${workbook.SheetNames.join(', ')}`;
+          parseWorkbook(workbook, file.name);
+
+          try {
+            localStorage.setItem(STORAGE_KEYS.UPLOADED_DATA, JSON.stringify(appState));
+          } catch (err) {
+            showToast('⚠️ File lớn vượt bộ nhớ cache, vẫn hiển thị đầy đủ phiên này.');
+          }
+
+          populateEmployeeDropdowns();
+          renderAll();
+          showToast(`✅ Đã nạp xong ${appState.orders.length} dòng dữ liệu!`);
+        } catch (err) {
+          alert('Lỗi khi đọc file Excel: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function findSheetByKeyword(workbook, keywords) {
+      const names = workbook.SheetNames;
+      for (const kw of keywords) {
+        const exact = names.find(n => normalizeStr(n) === normalizeStr(kw));
+        if (exact) return workbook.Sheets[exact];
+      }
+      for (const kw of keywords) {
+        const partial = names.find(n => normalizeStr(n).includes(normalizeStr(kw)));
+        if (partial) return workbook.Sheets[partial];
+      }
+      return null;
+    }
+
+    function parseWorkbook(workbook, fileName) {
+      appState.fileName = fileName;
+      appState.uploadedAt = new Date().toLocaleString('vi-VN');
+      document.getElementById('lastUpdatedText').textContent = `📂 File hiện tại: ${appState.fileName} (${appState.uploadedAt})`;
+
+      const sheetTongHop = findSheetByKeyword(workbook, ['Tổng Hợp', 'Tong Hop', 'KPI']);
+      appState.kpiSummary = parseKpiSummarySheet(sheetTongHop);
+
+      const sheetTongThe = findSheetByKeyword(workbook, ['Tổng Thể', 'Tong The', 'Tổng Hợp']);
+      appState.tatService = parseTatServiceSheet(sheetTongThe || sheetTongHop);
+
+      const sheetGcsm = findSheetByKeyword(workbook, ['GCSM SO', 'GCSM']);
+      const sheetCenter = findSheetByKeyword(workbook, ['Center SO', 'Center']);
+
+      appState.orders = [
+        ...parseSalesSheet(sheetGcsm, 'GCSM SO'),
+        ...parseSalesSheet(sheetCenter, 'Center SO')
+      ];
+    }
+
+    function parseKpiSummarySheet(ws) {
+      if (!ws) return [];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      const results = [];
+      let inKpiBlock = false;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i].map(c => String(c).trim());
+        const joined = row.join(' ').toLowerCase();
+
+        if (joined.includes('bảng báo cáo kpi') || joined.includes('kpi报表') || joined.includes('hạng mục') || joined.includes('chỉ tiêu')) {
+          inKpiBlock = true;
+          continue;
+        }
+        if (inK
